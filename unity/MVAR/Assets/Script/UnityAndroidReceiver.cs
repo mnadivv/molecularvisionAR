@@ -39,6 +39,11 @@ public class UnityAndroidReceiver : MonoBehaviour
 
     private void Awake()
     {
+        // 1. Optimasi performa dan frame rate kamera AR
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
         if (Instance == null)
         {
             Instance = this;
@@ -51,12 +56,18 @@ public class UnityAndroidReceiver : MonoBehaviour
 
         if (backButton != null)
         {
+            backButton.onClick.RemoveAllListeners();
             backButton.onClick.AddListener(BackToFlutter);
         }
     }
 
     private void Start()
     {
+        if (backButton != null)
+        {
+            backButton.onClick.RemoveAllListeners();
+            backButton.onClick.AddListener(BackToFlutter);
+        }
         ReadIntentData();
     }
 
@@ -168,18 +179,14 @@ public class UnityAndroidReceiver : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         try
         {
-            using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-            using (AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-            {
-                currentActivity.Call("finish");
-            }
+            SendToFlutter.Send("onBack");
         }
         catch (Exception e)
         {
             Debug.LogError("[Vuforia-Receiver] Gagal kembali ke Flutter: " + e.Message);
         }
 #else
-        Debug.Log("[Vuforia-Receiver] Tombol Back ditekan (menutup activity di Android).");
+        Debug.Log("[Vuforia-Receiver] Tombol Back ditekan (kirim onBack ke Flutter).");
 #endif
     }
 }

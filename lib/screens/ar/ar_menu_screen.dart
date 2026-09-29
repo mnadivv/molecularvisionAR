@@ -4,7 +4,7 @@ import '../../core/models/chemistry_topic.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/menu_card.dart';
 
-import 'ar_camera_screen.dart';
+import 'ar_unity_screen.dart';
 
 class ARMenuScreen extends StatefulWidget {
   const ARMenuScreen({super.key});
@@ -40,6 +40,11 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
         return topic.title
                 .toLowerCase()
                 .contains(keyword) ||
+
+            (topic.practicumTitle != null &&
+                topic.practicumTitle!
+                    .toLowerCase()
+                    .contains(keyword)) ||
 
             topic.subtitle
                 .toLowerCase()
@@ -150,14 +155,17 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
 
                   final topic =
                       filteredTopics[index];
+                  final displayTitle =
+                      topic.practicumTitle ?? topic.title;
+
                   return MenuCard(
 
                     icon: topic.icon,
 
-                    title: topic.title,
+                    title: displayTitle,
 
                     subtitle:
-                        "Lihat model AR ${topic.title}",
+                        "Buka visualisasi 3D AR ${topic.title}",
 
                     iconColor: topic.color,
 
@@ -170,7 +178,7 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
                         MaterialPageRoute(
 
                           builder: (_) =>
-                              ARCameraScreen(
+                              ARUnityScreen(
                             topic: topic,
                           ),
 
