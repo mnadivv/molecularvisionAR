@@ -291,7 +291,6 @@ RectTransform:
   m_Children:
   - {fileID: 1949990085}
   - {fileID: 1076945975}
-  - {fileID: 2097663661}
   - {fileID: 1961662691}
   - {fileID: 1524638715}
   - {fileID: 2005908670}
@@ -303,6 +302,7 @@ RectTransform:
   - {fileID: 975163721}
   - {fileID: 1471239597}
   - {fileID: 2010147122}
+  - {fileID: 2097663661}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -468,7 +468,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: bbbd388c8d0ac024ebcbe128ecf00efb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 136d7e85b9f07ca47920bfc9d41fedfc, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -495,14 +495,14 @@ RectTransform:
   m_GameObject: {fileID: 412570312}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.61107, y: 0.61107, z: 0.61107}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 180054106}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -349.79874, y: 157.29276}
+  m_AnchoredPosition: {x: -349.79874, y: 161.13892}
   m_SizeDelta: {x: 34.266, y: 31.894}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &487967330
@@ -654,7 +654,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.05
-  far clip plane: 2000
+  far clip plane: 30
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -697,7 +697,7 @@ MonoBehaviour:
   m_Script: {fileID: -1826476478, guid: 8a9a760f95896c34689febc965510927, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.VuforiaBehaviour
-  mWorldCenterMode: 2
+  mWorldCenterMode: 1
   mWorldCenter: {fileID: 0}
 --- !u!81 &700684820
 AudioListener:
@@ -1099,6 +1099,7 @@ GameObject:
   - component: {fileID: 1076945975}
   - component: {fileID: 1076945977}
   - component: {fileID: 1076945976}
+  - component: {fileID: 1076945978}
   m_Layer: 5
   m_Name: ButtonBahan
   m_TagString: Untagged
@@ -1145,7 +1146,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 97b9429f0964fc34498d68c3206ca89c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1d6bf0f750bdb24449f03fc452220a6b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1163,6 +1164,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1076945974}
   m_CullTransparentMesh: 1
+--- !u!114 &1076945978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1076945974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ca962f84ed00ba43b0ca4eb77b3e8e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleTogglePanel
+  tombolYangDihilangkan:
+  - {fileID: 1076945974}
+  - {fileID: 1949990084}
+  panelYangDitampilkan:
+  - {fileID: 2005908669}
+  - {fileID: 2005908669}
+  audioSource: {fileID: 2097663660}
+  suaraKlik: {fileID: 8300000, guid: 6455b0137e1b7914190974f1cbc7b198, type: 3}
+  volumeSuara: 1
+  backgroundShadow: {fileID: 0}
+  tombolClose: {fileID: 1961662692}
+  objekYangDimunculkanSaatClose: []
 --- !u!1 &1221993700
 GameObject:
   m_ObjectHideFlags: 0
@@ -1236,8 +1261,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -214.3772, y: -24.995544}
-  m_SizeDelta: {x: 97.19098, y: 28.918999}
+  m_AnchoredPosition: {x: -203.07774, y: -23.551117}
+  m_SizeDelta: {x: 83.3448, y: 24.351}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1237735765
 MonoBehaviour:
@@ -1303,7 +1328,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f8242b02b1069a947a37e750242d5153, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a74a685087faf704093ddf882bd6bfc2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1827,8 +1852,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -113.33539, y: -25.220518}
-  m_SizeDelta: {x: 83.639, y: 28.919}
+  m_AnchoredPosition: {x: -112.581726, y: -25.025024}
+  m_SizeDelta: {x: 69.7928, y: 23.961}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1738874968
 MonoBehaviour:
@@ -1850,7 +1875,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ff3e2e5931b8e3d43961900b240c8143, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9c0d42ba2878c9d4db08b77cd76d94b4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2040,8 +2065,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -36.039185, y: -25.61029}
-  m_SizeDelta: {x: 25.385, y: 24.351}
+  m_AnchoredPosition: {x: -46.058136, y: -25.220032}
+  m_SizeDelta: {x: 20.7246, y: 19.8804}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1818459339
 MonoBehaviour:
@@ -2107,7 +2132,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 541815e7640d8ac4d8402849c4d53d75, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 89ec5e7cccb1dfd409eb45f5c22c610e, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2202,7 +2227,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 3f0e3455da6bfef409580b2de2996aab, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a6df3dec104eb5f42a96a70a4796313d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Vuforia;
 
 /// <summary>
 /// Pasang script ini pada GameObject di Scene Unity Vuforia Anda (misal pada ARReceiver atau GameManager).
@@ -40,9 +41,12 @@ public class UnityAndroidReceiver : MonoBehaviour
     private void Awake()
     {
         // 1. Optimasi performa dan frame rate kamera AR
-        Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 60;
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+        // 2. Kaitkan optimasi kamera Vuforia berkecepatan tinggi saat Vuforia Engine dimulai
+        VuforiaApplication.Instance.OnVuforiaStarted += OnVuforiaStarted;
 
         if (Instance == null)
         {
@@ -58,6 +62,35 @@ public class UnityAndroidReceiver : MonoBehaviour
         {
             backButton.onClick.RemoveAllListeners();
             backButton.onClick.AddListener(BackToFlutter);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (VuforiaApplication.Instance != null)
+        {
+            VuforiaApplication.Instance.OnVuforiaStarted -= OnVuforiaStarted;
+        }
+    }
+
+    /// <summary>
+    /// Mengunci kamera ke mode performa tinggi (60 FPS sensor, latensi minimal)
+    /// </summary>
+    private void OnVuforiaStarted()
+    {
+        try
+        {
+            // Meminta sensor kamera bekerja pada FPS tertinggi dan buffer delay terendah
+            VuforiaBehaviour.Instance.CameraDevice.SetCameraMode(CameraMode.MODE_OPTIMIZE_SPEED);
+
+            // Menjaga continuous autofocus aktif agar tidak terjadi shutter hunting delay
+            VuforiaBehaviour.Instance.CameraDevice.SetFocusMode(FocusMode.FOCUS_MODE_CONTINUOUSAUTO);
+
+            Debug.Log("[Vuforia-Receiver] Berhasil mengunci CameraMode: MODE_OPTIMIZE_SPEED & FOCUS_MODE_CONTINUOUSAUTO");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("[Vuforia-Receiver] Gagal mengatur CameraMode: " + ex.Message);
         }
     }
 
