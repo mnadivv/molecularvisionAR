@@ -74,19 +74,23 @@ public class UnityAndroidReceiver : MonoBehaviour
     }
 
     /// <summary>
-    /// Mengunci kamera ke mode performa tinggi (60 FPS sensor, latensi minimal)
+    /// Mengunci kamera ke mode performa tinggi di Android, dan mode aman saat di Unity Editor
     /// </summary>
     private void OnVuforiaStarted()
     {
         try
         {
-            // Meminta sensor kamera bekerja pada FPS tertinggi dan buffer delay terendah
+#if UNITY_ANDROID && !UNITY_EDITOR
+            // Meminta sensor kamera Android bekerja pada FPS tertinggi dan buffer delay terendah
             VuforiaBehaviour.Instance.CameraDevice.SetCameraMode(CameraMode.MODE_OPTIMIZE_SPEED);
 
             // Menjaga continuous autofocus aktif agar tidak terjadi shutter hunting delay
             VuforiaBehaviour.Instance.CameraDevice.SetFocusMode(FocusMode.FOCUS_MODE_CONTINUOUSAUTO);
 
-            Debug.Log("[Vuforia-Receiver] Berhasil mengunci CameraMode: MODE_OPTIMIZE_SPEED & FOCUS_MODE_CONTINUOUSAUTO");
+            Debug.Log("[Vuforia-Receiver] Sukses set CameraMode: MODE_OPTIMIZE_SPEED & FOCUS_MODE_CONTINUOUSAUTO pada Android");
+#else
+            Debug.Log("[Vuforia-Receiver] Play Mode di Unity Editor: Menggunakan webcam profil default.");
+#endif
         }
         catch (Exception ex)
         {

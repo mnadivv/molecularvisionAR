@@ -13,7 +13,7 @@ public class SimpleTogglePanel : MonoBehaviour
     public GameObject[] tombolYangDihilangkan;
 
     [Header("=== PANEL YANG DITAMPILKAN (bisa banyak) ===")]
-    [Tooltip("Drag semua panel yang mau DITAMPILKAN saat tombol ini diklik.")]
+    [Tooltip("Drag semua panel yang mau DITAMPILKAN saat tombol ini diklik. JANGAN masukkan tombol close ke sini.")]
     public GameObject[] panelYangDitampilkan;
 
     [Header("=== AUDIO KLIK ===")]
@@ -38,11 +38,24 @@ public class SimpleTogglePanel : MonoBehaviour
     [Tooltip("Objek yang dimunculkan kembali saat tombol close diklik.")]
     public GameObject[] objekYangDimunculkanSaatClose;
 
+    private bool isInitialized = false;
+
     void Start()
     {
+        Initialize();
+    }
+
+    void Initialize()
+    {
+        if (isInitialized) return;
+
         // 1. Setup tombol utama
         Button btn = GetComponent<Button>();
-        if (btn == null) btn = gameObject.AddComponent<Button>();
+        if (btn == null) 
+        {
+            Debug.LogWarning($"[SimpleTogglePanel] Tidak ada komponen Button di {gameObject.name}. Menambahkan otomatis...");
+            btn = gameObject.AddComponent<Button>();
+        }
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(OnTombolDiklik);
 
@@ -51,6 +64,10 @@ public class SimpleTogglePanel : MonoBehaviour
         {
             tombolClose.onClick.RemoveAllListeners();
             tombolClose.onClick.AddListener(OnTombolCloseDiklik);
+        }
+        else
+        {
+            Debug.LogWarning($"[SimpleTogglePanel] Tombol Close belum di-drag di {gameObject.name}!");
         }
 
         // 3. Setup background shadow (klik untuk tutup)
@@ -70,6 +87,8 @@ public class SimpleTogglePanel : MonoBehaviour
         // 4. Cari AudioSource kalau belum diisi
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+
+        isInitialized = true;
     }
 
     void OnTombolDiklik()
@@ -78,10 +97,13 @@ public class SimpleTogglePanel : MonoBehaviour
         MainkanSuara();
 
         // 2. Sembunyikan tombol-tombol
-        foreach (GameObject tombol in tombolYangDihilangkan)
+        if (tombolYangDihilangkan != null)
         {
-            if (tombol != null)
-                tombol.SetActive(false);
+            foreach (GameObject tombol in tombolYangDihilangkan)
+            {
+                if (tombol != null && tombol != gameObject) // Jangan matikan diri sendiri jika sedang diklik
+                    tombol.SetActive(false);
+            }
         }
 
         // 3. Tampilkan background shadow (kalau diisi)
@@ -89,16 +111,24 @@ public class SimpleTogglePanel : MonoBehaviour
             backgroundShadow.SetActive(true);
 
         // 4. Tampilkan SEMUA panel di list (bisa banyak)
-        foreach (GameObject panel in panelYangDitampilkan)
+        if (panelYangDitampilkan != null)
         {
-            if (panel == null) continue;
+            foreach (GameObject panel in panelYangDitampilkan)
+            {
+                if (panel == null) continue;
 
-            panel.SetActive(true);
+                panel.SetActive(true);
+                Debug.Log($"[SimpleTogglePanel] Menampilkan panel: {panel.name}");
 
-            // Reset item di dalam panel (kalau ada KlikHilangBerurutan)
-            KlikHilangBerurutan scriptKlik = panel.GetComponentInChildren<KlikHilangBerurutan>();
-            if (scriptKlik != null)
-                scriptKlik.ResetSemua();
+                // Reset item di dalam panel (kalau ada KlikHilangBerurutan)
+                // Menggunakan GetComponentInChildren dengan parameter true agar mencari di objek yang tidak aktif juga
+                KlikHilangBerurutan scriptKlik = panel.GetComponentInChildren<KlikHilangBerurutan>(true);
+                if (scriptKlik != null)
+                {
+                    scriptKlik.ResetSemua();
+                    Debug.Log($"[SimpleTogglePanel] Reset KlikHilangBerurutan di {panel.name}");
+                }
+            }
         }
     }
 
@@ -108,10 +138,16 @@ public class SimpleTogglePanel : MonoBehaviour
         MainkanSuara();
 
         // 2. Sembunyikan SEMUA panel di list
-        foreach (GameObject panel in panelYangDitampilkan)
+        if (panelYangDitampilkan != null)
         {
-            if (panel != null)
-                panel.SetActive(false);
+            foreach (GameObject panel in panelYangDitampilkan)
+            {
+                if (panel != null)
+                {
+                    panel.SetActive(false);
+                    Debug.Log($"[SimpleTogglePanel] Menyembunyikan panel: {panel.name}");
+                }
+            }
         }
 
         // 3. Sembunyikan background shadow
@@ -119,10 +155,16 @@ public class SimpleTogglePanel : MonoBehaviour
             backgroundShadow.SetActive(false);
 
         // 4. Munculkan kembali objek yang perlu dimunculkan
-        foreach (GameObject obj in objekYangDimunculkanSaatClose)
+        if (objekYangDimunculkanSaatClose != null)
         {
-            if (obj != null)
-                obj.SetActive(true);
+            foreach (GameObject obj in objekYangDimunculkanSaatClose)
+            {
+                if (obj != null)
+                {
+                    obj.SetActive(true);
+                    Debug.Log($"[SimpleTogglePanel] Memunculkan kembali: {obj.name}");
+                }
+            }
         }
     }
 
@@ -152,6 +194,6 @@ public class SimpleTogglePanel : MonoBehaviour
         }
 
         audioSource.PlayOneShot(clip, volumeSuara);
-        Debug.Log($"[SimpleTogglePanel] Putar suara: {clip.name}");
+        // Debug.Log($"[SimpleTogglePanel] Putar suara: {clip.name}"); // Dimatikan agar Console tidak penuh
     }
 }
