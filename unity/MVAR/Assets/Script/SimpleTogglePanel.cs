@@ -77,13 +77,7 @@ public class SimpleTogglePanel : MonoBehaviour
         // 1. Mainkan suara klik
         MainkanSuara();
 
-<<<<<<< Updated upstream
         // 2. Sembunyikan tombol-tombol
-        foreach (GameObject tombol in tombolYangDihilangkan)
-        {
-            if (tombol != null)
-                tombol.SetActive(false);
-=======
         if (tombolYangDihilangkan != null)
         {
             foreach (GameObject tombol in tombolYangDihilangkan)
@@ -91,7 +85,6 @@ public class SimpleTogglePanel : MonoBehaviour
                 if (tombol != null)
                     tombol.SetActive(false);
             }
->>>>>>> Stashed changes
         }
 
         gameObject.SetActive(false);
