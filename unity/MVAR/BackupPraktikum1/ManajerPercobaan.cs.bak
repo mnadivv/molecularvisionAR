@@ -1,0 +1,136 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Pasang di satu objek yang selalu aktif (mis. ScriptLogic/ManajerLatihan).
+/// - Percobaan berikutnya terkunci sampai percobaan sebelumnya selesai (sampai Kesimpulan tampil).
+/// - Saat percobaan selesai: PilihanPercobaan muncul lagi, tombol percobaan berikutnya terbuka,
+///   dan tombol percobaan yang selesai berubah menjadi tombol kesimpulan (kalau sprite-nya sudah dipasang).
+/// - Menekan tombol percobaan yang sudah selesai menampilkan Kesimpulan-nya.
+/// Dihubungkan ke onClick tombol lewat PilihPercobaan(int).
+/// </summary>
+public class ManajerPercobaan : MonoBehaviour
+{
+    public static ManajerPercobaan Instance { get; private set; }
+
+    [System.Serializable]
+    public class DataPercobaan
+    {
+        public string nama;
+        [Tooltip("Tombol pilihan (ButtonPercobaan1 / ButtonPercobaan2).")]
+        public Button tombolPilihan;
+        [Tooltip("Soal pertama percobaan ini (Soal1).")]
+        public GameObject soalPertama;
+        [Tooltip("Panel Kesimpulan percobaan ini.")]
+        public GameObject kesimpulan;
+        [Tooltip("Gambar tombol setelah percobaan selesai (tombol kesimpulan). Kosong = gambar tombol tidak berubah.")]
+        public Sprite spriteTombolKesimpulan;
+        [HideInInspector] public Sprite spriteAwal;
+        [HideInInspector] public bool selesai;
+    }
+
+    [Header("=== PANEL PILIHAN ===")]
+    [Tooltip("Objek PilihanPercobaan.")]
+    public GameObject panelPilihan;
+
+    [Header("=== DAFTAR PERCOBAAN (URUT) ===")]
+    public List<DataPercobaan> percobaan = new List<DataPercobaan>();
+
+    [Tooltip("Percobaan berikutnya terkunci sampai percobaan sebelumnya selesai.")]
+    public bool kunciBerurutan = true;
+
+    private void Awake()
+    {
+        Instance = this;
+        for (int i = 0; i < percobaan.Count; i++)
+        {
+            DataPercobaan p = percobaan[i];
+            if (p.tombolPilihan == null) continue;
+            Image img = p.tombolPilihan.GetComponent<Image>();
+            if (img != null) p.spriteAwal = img.sprite;
+        }
+    }
+
+    private void Start()
+    {
+        TerapkanStatus();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    /// <summary>Apakah percobaan ke-i boleh dibuka.</summary>
+    public bool Terbuka(int i)
+    {
+        if (i < 0 || i >= percobaan.Count) return false;
+        if (!kunciBerurutan || i == 0) return true;
+        return percobaan[i - 1].selesai;
+    }
+
+    /// <summary>Dipanggil dari onClick tombol percobaan (0 = Percobaan1, 1 = Percobaan2).</summary>
+    public void PilihPercobaan(int i)
+    {
+        if (!Terbuka(i)) return;
+        DataPercobaan p = percobaan[i];
+
+        SembunyikanSemuaKesimpulan();
+
+        if (p.selesai)
+        {
+            // Sudah selesai: tombol ini berfungsi sebagai tombol kesimpulan
+            if (p.kesimpulan != null) p.kesimpulan.SetActive(true);
+        }
+        else
+        {
+            if (panelPilihan != null) panelPilihan.SetActive(false);
+            if (p.soalPertama != null) p.soalPertama.SetActive(true);
+        }
+    }
+
+    /// <summary>Dipanggil otomatis saat panel Kesimpulan percobaan ke-i tampil.</summary>
+    public void PercobaanSelesai(int i)
+    {
+        if (i < 0 || i >= percobaan.Count) return;
+        percobaan[i].selesai = true;
+        if (panelPilihan != null) panelPilihan.SetActive(true);
+        TerapkanStatus();
+    }
+
+    /// <summary>Kunci ulang semua percobaan (bisa dipanggil dari tombol reset).</summary>
+    public void ResetProgres()
+    {
+        for (int i = 0; i < percobaan.Count; i++)
+            percobaan[i].selesai = false;
+        SembunyikanSemuaKesimpulan();
+        TerapkanStatus();
+        if (ManajerPilihItem.Instance != null)
+            ManajerPilihItem.Instance.ResetSemuaTahap();
+    }
+
+    public void TerapkanStatus()
+    {
+        for (int i = 0; i < percobaan.Count; i++)
+        {
+            DataPercobaan p = percobaan[i];
+            if (p.tombolPilihan == null) continue;
+
+            p.tombolPilihan.interactable = Terbuka(i);
+
+            Image img = p.tombolPilihan.GetComponent<Image>();
+            if (img != null)
+            {
+                bool pakaiKesimpulan = p.selesai && p.spriteTombolKesimpulan != null;
+                img.sprite = pakaiKesimpulan ? p.spriteTombolKesimpulan : p.spriteAwal;
+            }
+        }
+    }
+
+    private void SembunyikanSemuaKesimpulan()
+    {
+        for (int i = 0; i < percobaan.Count; i++)
+            if (percobaan[i].kesimpulan != null) percobaan[i].kesimpulan.SetActive(false);
+    }
+}

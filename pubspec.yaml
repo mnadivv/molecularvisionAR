@@ -37,6 +37,7 @@ dependencies:
   google_fonts: ^6.2.1
 
   camera: ^0.11.1
+  flutter_embed_unity: ^2.0.0
   
 dev_dependencies:
   flutter_test:

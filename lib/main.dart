@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 
 import 'screens/splash_screen.dart';
-import 'services/camera_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

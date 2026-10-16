@@ -6,7 +6,6 @@ import '../widgets/menu_card.dart';
 import 'materi/materi_screen.dart';
 import 'ar/ar_menu_screen.dart';
 import 'molecule/molecule_screen.dart';
-import 'quiz/quiz_screen.dart';
 import 'quiz/quiz_material_screen.dart';
 
 class HomeScreen extends StatefulWidget {
