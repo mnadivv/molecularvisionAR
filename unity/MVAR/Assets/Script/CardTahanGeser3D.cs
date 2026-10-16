@@ -22,6 +22,18 @@ public class CardTahanGeser3D : MonoBehaviour,
     public Camera kamera;
     [Tooltip("CanvasGroup di ScrollAlat. Kosongkan: dicari/ditambah otomatis")]
     public CanvasGroup panelScrollAlat;
+    [Tooltip("Pengelola titik penempatan untuk kartu ini. Kosongkan: pakai ManajerSlotTabung.Instance")]
+    public ManajerSlotTabung manajerSlot;
+    [Tooltip("Kalau diisi, kartu ini (mis. bahan) dilepas ke ManajerTakaran, bukan ke slot tabung.")]
+    public ManajerTakaran penerima;
+    [Tooltip("Kalau diisi, kartu bahan/alat P2 diarahkan ke ManajerSpotPlate.")]
+    public ManajerSpotPlate penerimaSP;
+    [Tooltip("Nama bahan untuk ManajerSpotPlate.DropBahan (mis. AsamBenzoat, MGCL2, PetroleumEter, Aquades, Etanol, EtanolAquades).")]
+    public string namaBahanSP;
+
+    [Tooltip("Jika true: saat card dilepas di luar area yang benar DAN sedang di soal aktif, tampilkan pesan salah. " +
+             "Jika false (mode bebas/awal): tidak ada pengecekan, model langsung hilang begitu dilepas.")]
+    public bool periksaKesesuaian = true;
 
     [Header("Tahan")]
     [Tooltip("Lama menahan (detik) sebelum model muncul. 0 = langsung saat ditekan")]
@@ -47,6 +59,8 @@ public class CardTahanGeser3D : MonoBehaviour,
     private bool pointerDitekan;
     private bool modeScroll;
     private bool modelAktif;
+    private bool diblokir;
+    private ManajerSlotTabung Manajer { get { return manajerSlot != null ? manajerSlot : ManajerSlotTabung.Instance; } }
     private float waktuMulai;
     private Vector2 posisiTekan;
     private Vector2 posisiTerakhir;
@@ -89,7 +103,7 @@ public class CardTahanGeser3D : MonoBehaviour,
 
     private void Update()
     {
-        if (pointerDitekan && !modelAktif && !modeScroll &&
+        if (pointerDitekan && !modelAktif && !modeScroll && !diblokir &&
             Time.unscaledTime - waktuMulai >= waktuTahan)
         {
             Aktifkan();
@@ -101,9 +115,24 @@ public class CardTahanGeser3D : MonoBehaviour,
         if (modelAktif && instans != null && cam != null)
         {
             GerakkanModel(posisiLayarModel);
-            if (ManajerSlotTabung.Instance != null)
-                ManajerSlotTabung.Instance.Sorot(posisiLayarModel, true, cam);
+            if (penerima == null && Manajer != null)
+                Manajer.Sorot(posisiLayarModel, true, cam);
         }
+    }
+
+    /// <summary>True kalau saat ini sedang di dalam panel soal percobaan (bukan di PilihanPercobaan / layar awal).</summary>
+    private bool SedangDiSoal()
+    {
+        if (ManajerPilihItem.Instance == null) return false;
+        // Cek apakah ada panel soal yang sedang aktif di hierarchy
+        var tahap = ManajerPilihItem.Instance.tahap;
+        if (tahap == null) return false;
+        for (int i = 0; i < tahap.Count; i++)
+        {
+            if (tahap[i] != null && tahap[i].panelSoal != null && tahap[i].panelSoal.activeInHierarchy)
+                return true;
+        }
+        return false;
     }
 
     // ---------- Event pointer ----------
@@ -113,6 +142,7 @@ public class CardTahanGeser3D : MonoBehaviour,
         // Tekanan terbaru selalu menang, supaya state tidak macet kalau event lepas terlewat
         ResetSemua();
         pointerDitekan = true;
+        diblokir = false;
         idPointer = e.pointerId;
         posisiTekan = e.position;
         posisiTerakhir = e.position;
@@ -123,11 +153,17 @@ public class CardTahanGeser3D : MonoBehaviour,
     public void OnPointerUp(PointerEventData e)
     {
         if (e.pointerId != idPointer) return;
+        bool ketukPilihAsam = pointerDitekan && !modelAktif && !modeScroll &&
+                              namaBahanSP == "AsamBenzoat" && penerimaSP != null;
         pointerDitekan = false;
         if (modelAktif)
         {
             posisiLayarModel = e.position;
             Selesai(true);
+        }
+        else if (ketukPilihAsam)
+        {
+            penerimaSP.PilihBahanAsamBenzoat();
         }
     }
 
@@ -175,6 +211,42 @@ public class CardTahanGeser3D : MonoBehaviour,
 
     private void Aktifkan()
     {
+        // Hanya alat/bahan yang sesuai soal yang boleh diambil.
+        // Pesan salahnya ditampilkan oleh ItemPilihGate di kartu yang sama.
+        // Kalau card ini punya penerimaSP (khusus P2), cek ManajerSpotPlate aktif.
+        // Kalau card bersama (namaBahanSP != null, penerimaSP == null), jangan blokir
+        // lewat ManajerPilihItem saat P1 aktif — biarkan ItemPilihGate yang menangani.
+        bool p2Aktif = ManajerSpotPlate.Instance != null &&
+                       ManajerSpotPlate.Instance.FaseAktif != ManajerSpotPlate.FaseP2.Idle;
+        bool cardKhususP2 = penerimaSP != null;
+        bool cardBersamaP2 = !string.IsNullOrEmpty(namaBahanSP) && penerimaSP == null;
+        // Blokir hanya kalau: (a) bukan card P2 sama sekali, DAN ManajerPilihItem blokir,
+        //                ATAU (b) card khusus P2 dan P2 belum aktif
+        if (cardKhususP2 && !p2Aktif && namaBahanSP != "PlateTetes")
+        {
+            // Card khusus P2 tapi P2 belum mulai — blokir diam-diam
+            diblokir = true;
+            return;
+        }
+        if (!cardKhususP2 && !cardBersamaP2)
+        {
+            // Card murni P1 — cek ManajerPilihItem seperti biasa
+            if (ManajerPilihItem.Instance != null && !ManajerPilihItem.Instance.BolehDipakai(gameObject))
+            {
+                diblokir = true;
+                return;
+            }
+        }
+        else if (cardBersamaP2 && !p2Aktif)
+        {
+            // Card bersama, sedang di P1 — cek ManajerPilihItem untuk P1
+            if (ManajerPilihItem.Instance != null && !ManajerPilihItem.Instance.BolehDipakai(gameObject))
+            {
+                diblokir = true;
+                return;
+            }
+        }
+
         cam = kamera != null ? kamera : Camera.main;
         if (objek3D == null || cam == null)
         {
@@ -215,12 +287,29 @@ public class CardTahanGeser3D : MonoBehaviour,
         float tinggiCard = Mathf.Abs(Vector3.Dot(diag, cam.transform.up));
 
         // 2. Buat model di bawah wadah khusus, tegak lurus terhadap kamera
-        instans = Instantiate(objek3D);
-        instans.name = objek3D.name + "_drag";
+        GameObject modelDrag = objek3D;
+        // Pada Soal 2 P2, memilih bahan asam benzoat mengambil spatula berisi serbuk.
+        if (namaBahanSP == "AsamBenzoat" && penerimaSP != null &&
+            penerimaSP.objekSpatulaAsam != null)
+            modelDrag = penerimaSP.objekSpatulaAsam;
+        instans = namaBahanSP == "AsamBenzoat" && penerimaSP != null
+            ? penerimaSP.AmbilSpatulaAsamUntukDrag()
+            : null;
+        if (instans == null) instans = Instantiate(modelDrag);
+        if (modelDrag.name.ToLowerInvariant().Contains("pipet") || modelDrag.name.ToLowerInvariant().Contains("pipeline") || modelDrag.name.ToLowerInvariant().Contains("aqua") || modelDrag.name.ToLowerInvariant().Contains("akuades"))
+        {
+            foreach (Camera kameraModel in instans.GetComponentsInChildren<Camera>(true)) Destroy(kameraModel);
+            foreach (Light lampuModel in instans.GetComponentsInChildren<Light>(true)) Destroy(lampuModel);
+        }
+        instans.name = modelDrag.name + "_drag";
         instans.transform.SetParent(AmbilWadah(), true);
-        instans.transform.rotation = cam.transform.rotation * Quaternion.Euler(rotasiTambahan) * objek3D.transform.rotation;
+        instans.transform.rotation = cam.transform.rotation * Quaternion.Euler(rotasiTambahan) * modelDrag.transform.rotation;
         instans.transform.position = cam.transform.position + cam.transform.forward * kedalaman;
         instans.SetActive(true);
+        if (namaBahanSP == "AsamBenzoat" && penerimaSP != null)
+            penerimaSP.TambahkanSerbukKeSpatula(instans);
+        InfoModel3D infoModel = instans.AddComponent<InfoModel3D>();
+        infoModel.skalaAsset = instans.transform.localScale;
 
         // 3. Skala supaya pas dengan ukuran card
         Vector3 pusatKam;
@@ -235,6 +324,8 @@ public class CardTahanGeser3D : MonoBehaviour,
         {
             Debug.LogWarning("CardTahanGeser3D: model tidak punya Renderer, ukuran tidak bisa disesuaikan.");
         }
+
+        infoModel.Perbarui();
 
         // 4. Taruh pusat model tepat di pusat card
         Vector3 targetDunia = cam.ScreenToWorldPoint(new Vector3(pusatLayar.x, pusatLayar.y, kedalaman));
@@ -266,14 +357,33 @@ public class CardTahanGeser3D : MonoBehaviour,
     private void Selesai(bool cobaTaruh)
     {
         modelAktif = false;
-        ManajerSlotTabung manajer = ManajerSlotTabung.Instance;
+        ManajerSpotPlate manajerSP = penerimaSP != null ? penerimaSP :
+            (!string.IsNullOrEmpty(namaBahanSP) ? ManajerSpotPlate.Instance : null);
+        bool faseP2Aktif = manajerSP != null &&
+            manajerSP.FaseAktif != ManajerSpotPlate.FaseP2.Idle;
+        ManajerSlotTabung manajer = penerima == null && manajerSP == null ? Manajer : null;
         if (manajer != null) manajer.Sorot(posisiLayarModel, false, cam);
         if (instans != null)
         {
             bool ditaruh = false;
-            if (cobaTaruh && manajer != null)
+            if (cobaTaruh && faseP2Aktif && manajerSP != null)
+                ditaruh = JatuhkanKeSpotPlate(manajerSP);
+            else if (cobaTaruh && manajer != null)
                 ditaruh = manajer.CobaTaruh(posisiLayarModel, instans, cam, kedalaman);
-            if (!ditaruh) Destroy(instans);
+            else if (cobaTaruh && penerima != null)
+                ditaruh = penerima.CobaTaruh(posisiLayarModel, instans, cam, kedalaman, gameObject);
+            else if (cobaTaruh && manajerSP != null)
+                ditaruh = JatuhkanKeSpotPlate(manajerSP);
+
+            if (!ditaruh)
+            {
+                if (cobaTaruh && periksaKesesuaian && SedangDiSoal())
+                {
+                    if (ManajerPilihItem.Instance != null)
+                        ManajerPilihItem.Instance.TampilkanSalah();
+                }
+                Destroy(instans);
+            }
             instans = null;
         }
         if (panelScrollAlat != null)
@@ -281,6 +391,16 @@ public class CardTahanGeser3D : MonoBehaviour,
             panelScrollAlat.alpha = 1f;
             panelScrollAlat.blocksRaycasts = true;
         }
+    }
+
+    private bool JatuhkanKeSpotPlate(ManajerSpotPlate target)
+    {
+        if (namaBahanSP == "PlateTetes")
+            return target.DropPlate(posisiLayarModel, instans, cam);
+        if (namaBahanSP == "TesKonduktor")
+            return target.DropTespen(posisiLayarModel, cam);
+        return !string.IsNullOrEmpty(namaBahanSP) &&
+               target.DropBahan(namaBahanSP, posisiLayarModel, cam, instans);
     }
 
     private void ResetSemua()
