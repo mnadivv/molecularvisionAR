@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/auth/presentation/bloc/auth_state.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
 import '../utils/app_colors.dart';
 import '../widgets/custom_loading_bar.dart';
 import 'home_screen.dart';
@@ -33,13 +37,18 @@ class _SplashScreenState extends State<SplashScreen> {
         Future.delayed(const Duration(milliseconds: 500), () {
           if (!mounted) return;
 
+          final authState = context.read<AuthBloc>().state;
+          final Widget nextScreen = authState is Authenticated
+              ? const HomeScreen()
+              : const LoginScreen();
+
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(
               transitionDuration: const Duration(milliseconds: 700),
               pageBuilder: (_, animation, __) => FadeTransition(
                 opacity: animation,
-                child: const HomeScreen(),
+                child: nextScreen,
               ),
             ),
           );

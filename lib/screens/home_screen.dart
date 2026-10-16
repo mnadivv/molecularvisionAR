@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/auth/presentation/bloc/auth_event.dart';
+import '../features/auth/presentation/bloc/auth_state.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
 import '../utils/app_colors.dart';
 import '../widgets/menu_card.dart';
 
@@ -78,6 +83,44 @@ class _HomeScreenState extends State<HomeScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0C2454),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent),
+            SizedBox(width: 10),
+            Text('Keluar Akun', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin keluar dari sesi akun siswa ini?',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Batal', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.read<AuthBloc>().add(const AuthLogoutRequested());
+            },
+            child: const Text('Keluar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAbout() {
@@ -168,7 +211,16 @@ class _HomeScreenState extends State<HomeScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is Unauthenticated) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+            );
+          }
+        },
+        child: Stack(
         children: [
 
           /// Background Molekul Kiri Atas
@@ -214,21 +266,81 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   children: [
 
-                    /// Info Button
-                    Row(
-                      children: [
+                    /// Top Bar (User Profile & Actions)
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, authState) {
+                        final user = authState is Authenticated ? authState.user : null;
 
-                        const Spacer(),
-
-                        IconButton(
-                          onPressed: _showAbout,
-                          splashRadius: 24,
-                          icon: const Icon(
-                            Icons.info_outline_rounded,
-                            color: Colors.white,
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                            ),
                           ),
-                        ),
-                      ],
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: AppColors.accent.withValues(alpha: 0.2),
+                                child: const Icon(
+                                  Icons.person_rounded,
+                                  color: AppColors.accent,
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user?.name ?? 'Siswa MVAR',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '${user?.degree?.name ?? 'Siswa'} • ${user?.school ?? 'MVAR Chemistry'}',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        fontSize: 11,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _showAbout,
+                                splashRadius: 20,
+                                icon: const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Colors.white70,
+                                  size: 22,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _confirmLogout,
+                                splashRadius: 20,
+                                icon: const Icon(
+                                  Icons.logout_rounded,
+                                  color: Colors.redAccent,
+                                  size: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 8),
@@ -421,6 +533,7 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
         ],
+        ),
       ),
     );
   }
