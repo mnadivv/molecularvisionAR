@@ -8,41 +8,42 @@ class QuizMaterialScreen extends StatelessWidget {
     super.key,
   });
 
+
   static const List<Map<String, String>> materials = [
     {
-      'id': 'stoikiometri',
-      'number': '01',
-      'name': 'Stoikiometri',
-    },
-    {
-      'id': 'struktur_atom',
-      'number': '02',
-      'name': 'Struktur Atom',
-    },
-    {
-      'id': 'sistem_periodik',
-      'number': '03',
-      'name': 'Sistem Periodik Unsur',
-    },
-    {
       'id': 'ikatan_kimia',
-      'number': '04',
+      'number': '01',
       'name': 'Ikatan Kimia',
     },
     {
-      'id': 'bentuk_molekul',
-      'number': '05',
-      'name': 'Bentuk Molekul',
-    },
-    {
-      'id': 'larutan',
-      'number': '06',
-      'name': 'Larutan',
-    },
-    {
       'id': 'termokimia',
-      'number': '07',
+      'number': '02',
       'name': 'Termokimia',
+    },
+    {
+      'id': 'laju_reaksi',
+      'number': '03',
+      'name': 'Laju Reaksi',
+    },
+    {
+      'id': 'stoikiometri',
+      'number': '04',
+      'name': 'Stokiometri',
+    },
+    {
+      'id': 'elektrolisis_asam_basa',
+      'number': '05',
+      'name': 'Elektrolisis dan Asam Basa',
+    },
+    {
+      'id': 'hidrolisis_garam',
+      'number': '06',
+      'name': 'Hidrolisis Garam',
+    },
+    {
+      'id': 'hasil_kali_kel arutan',
+      'number': '07',
+      'name': 'Hasil Kali Kelarutan',
     },
     {
       'id': 'kesetimbangan_kimia',
@@ -50,24 +51,19 @@ class QuizMaterialScreen extends StatelessWidget {
       'name': 'Kesetimbangan Kimia',
     },
     {
-      'id': 'asam_basa',
+      'id': 'sel_volta',
       'number': '09',
-      'name': 'Asam Basa',
+      'name': 'Sel Volta',
     },
     {
-      'id': 'elektrokimia',
+      'id': 'hidrokarbon',
       'number': '10',
-      'name': 'Elektrokimia',
+      'name': 'Hidrokarbon',
     },
     {
-      'id': 'kimia_organik',
+      'id': 'daur_ulang_polimer',
       'number': '11',
-      'name': 'Kimia Organik',
-    },
-    {
-      'id': 'laju_reaksi',
-      'number': '12',
-      'name': 'Laju Reaksi',
+      'name': 'Daur Ulang Polimer',
     },
   ];
 

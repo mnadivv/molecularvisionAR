@@ -24,8 +24,8 @@ class MateriDetailScreen extends StatelessWidget {
       case "Termokimia":
         return "Termokimia mempelajari perubahan energi panas yang terjadi selama reaksi kimia berlangsung.";
 
-      case "Kalorimetri":
-        return "Kalorimetri mempelajari cara mengukur jumlah kalor yang dilepas atau diserap suatu reaksi.";
+      case "Stokiometri":
+        return "Stokiometri mempelajari perhitungan jumlah zat dalam reaksi kimia.";
 
 case "Laju Reaksi":
   return """
@@ -114,9 +114,6 @@ Katalis adalah zat yang mempercepat reaksi tanpa ikut habis bereaksi. Katalis me
 
       case "Sel Volta":
         return "Sel Volta menghasilkan energi listrik melalui reaksi redoks spontan.";
-
-      case "Elektrolisis":
-        return "Elektrolisis menggunakan energi listrik untuk menjalankan reaksi redoks yang tidak spontan.";
 
       case "Hidrokarbon":
         return "Hidrokarbon merupakan senyawa yang hanya tersusun dari atom karbon dan hidrogen.";

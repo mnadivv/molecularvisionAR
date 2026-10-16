@@ -39,34 +39,34 @@ const List<ChemistryTopic> chemistryTopics = [
   ),
 
   ChemistryTopic(
-    title: "Kalorimetri",
-    subtitle: "Perhitungan kalor menggunakan kalorimeter.",
-    icon: Icons.science_rounded,
-    color: Colors.orange,
-    practicumTitle: "Praktikum 3 - Kalorimetri",
-    unityScene: "praktikum3",
-  ),
-
-  ChemistryTopic(
     title: "Laju Reaksi",
     subtitle: "Faktor-faktor yang mempengaruhi laju reaksi.",
     icon: Icons.speed_rounded,
     color: Colors.green,
-    practicumTitle: "Praktikum 4 - Laju Reaksi",
+    practicumTitle: "Praktikum 3 - Laju Reaksi",
+    unityScene: "praktikum3",
+  ),
+
+  ChemistryTopic(
+    title: "Stokiometri",
+    subtitle: "Perhitungan jumlah zat dalam reaksi kimia.",
+    icon: Icons.calculate_rounded,
+    color: Colors.orange,
+    practicumTitle: "Praktikum 4 - Stokiometri",
     unityScene: "praktikum4",
   ),
 
   ChemistryTopic(
-    title: "Asam Basa",
-    subtitle: "Teori serta sifat larutan asam dan basa.",
-    icon: Icons.opacity_rounded,
+    title: "Elektrolisis dan Asam Basa",
+    subtitle: "Reaksi elektrolisis serta konsep asam dan basa dalam larutan.",
+    icon: Icons.science_rounded,
     color: Colors.purple,
     practicumTitle: "Praktikum 5 - Asam Basa",
     unityScene: "praktikum5",
   ),
 
   ChemistryTopic(
-    title: "Hidrolisis",
+    title: "Hidrolisis Garam",
     subtitle: "Reaksi ion garam dengan air.",
     icon: Icons.water_drop_rounded,
     color: Colors.cyan,
@@ -102,21 +102,12 @@ const List<ChemistryTopic> chemistryTopics = [
   ),
 
   ChemistryTopic(
-    title: "Elektrolisis",
-    subtitle: "Konversi energi listrik menjadi energi kimia.",
-    icon: Icons.electric_bolt_rounded,
-    color: Colors.deepOrange,
-    practicumTitle: "Praktikum 10 - Elektrolisis",
-    unityScene: "praktikum10",
-  ),
-
-  ChemistryTopic(
     title: "Hidrokarbon",
     subtitle: "Struktur dan reaksi senyawa karbon.",
     icon: Icons.hexagon_rounded,
     color: Colors.brown,
-    practicumTitle: "Praktikum 11 - Hidrokarbon",
-    unityScene: "praktikum11",
+    practicumTitle: "Praktikum 10 - Hidrokarbon",
+    unityScene: "praktikum10",
   ),
 
   ChemistryTopic(
@@ -124,7 +115,8 @@ const List<ChemistryTopic> chemistryTopics = [
     subtitle: "Pemanfaatan kembali limbah polimer.",
     icon: Icons.recycling_rounded,
     color: Colors.lightGreen,
-    practicumTitle: "Praktikum 12 - Daur Ulang Polimer",
+    practicumTitle: "Praktikum 11 - Daur Ulang Polimer",
     unityScene: "praktikum12",
   ),
+
 ];
