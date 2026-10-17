@@ -6,7 +6,9 @@ import 'core/storage/token_storage_service.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
-import 'screens/splash_screen.dart';
+import 'features/home/presentation/screens/splash_screen.dart';
+
+import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,10 +49,7 @@ class MVARApp extends StatelessWidget {
     return MaterialApp(
       title: 'Molecular Vision AR',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Poppins',
-      ),
+      theme: AppTheme.darkTheme,
       home: const SplashScreen(),
     );
   }
