@@ -39,7 +39,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _fetchDegrees() async {
     try {
-      final repository = RepositoryProvider.of<AuthRepository>(context, listen: false);
+      final repository = RepositoryProvider.of<AuthRepository>(
+        context,
+        listen: false,
+      );
       final degrees = await repository.getDegrees();
       if (mounted) {
         setState(() {
@@ -68,14 +71,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _submitRegister() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthRegisterSubmitted(
-              name: _nameController.text,
-              email: _emailController.text,
-              password: _passwordController.text,
-              school: _schoolController.text,
-              idDegree: _selectedDegreeId,
-            ),
-          );
+        AuthRegisterSubmitted(
+          name: _nameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+          school: _schoolController.text,
+          idDegree: _selectedDegreeId,
+        ),
+      );
     }
   }
 
@@ -104,7 +107,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.error_outline_rounded, color: Colors.white),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -126,7 +132,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
         builder: (context, state) {
           final isLoading = state is AuthLoading;
-          final validationErrors = state is AuthFailure ? state.validationErrors : null;
+          final validationErrors = state is AuthFailure
+              ? state.validationErrors
+              : null;
 
           return Stack(
             children: [
@@ -147,7 +155,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Content
               SafeArea(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 10,
+                  ),
                   physics: const BouncingScrollPhysics(),
                   child: Form(
                     key: _formKey,
@@ -189,9 +200,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextField(
                                 controller: _nameController,
                                 label: 'Nama Lengkap',
-                                hint: 'Budi Santoso',
+                                hint: 'Masukkan Nama Lengkap',
                                 prefixIcon: Icons.person_outline_rounded,
-                                errorText: validationErrors?['name']?.firstOrNull,
+                                errorText:
+                                    validationErrors?['name']?.firstOrNull,
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
                                     return 'Nama lengkap wajib diisi.';
@@ -203,10 +215,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextField(
                                 controller: _emailController,
                                 label: 'Email',
-                                hint: 'budi@sekolah.sch.id',
+                                hint: 'Masukkan Email',
                                 prefixIcon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
-                                errorText: validationErrors?['email']?.firstOrNull,
+                                errorText:
+                                    validationErrors?['email']?.firstOrNull,
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
                                     return 'Email wajib diisi.';
@@ -221,10 +234,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextField(
                                 controller: _passwordController,
                                 label: 'Kata Sandi',
-                                hint: 'Minimal 8 karakter',
+                                hint: 'Masukkan Kata Sandi',
                                 prefixIcon: Icons.lock_outline_rounded,
                                 obscureText: _obscurePassword,
-                                errorText: validationErrors?['password']?.firstOrNull,
+                                errorText:
+                                    validationErrors?['password']?.firstOrNull,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword
@@ -250,9 +264,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextField(
                                 controller: _schoolController,
                                 label: 'Asal Sekolah (Opsional)',
-                                hint: 'SMAN 1 Jakarta',
+                                hint: 'Masukkan Asal Sekolah',
                                 prefixIcon: Icons.school_outlined,
-                                errorText: validationErrors?['school']?.firstOrNull,
+                                errorText:
+                                    validationErrors?['school']?.firstOrNull,
                               ),
                               const SizedBox(height: 18),
                               CustomDropdown<int>(
@@ -261,7 +276,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 value: _selectedDegreeId,
                                 prefixIcon: Icons.class_outlined,
                                 isLoading: _isLoadingDegrees,
-                                errorText: validationErrors?['id_degree']?.firstOrNull,
+                                errorText:
+                                    validationErrors?['id_degree']?.firstOrNull,
                                 items: _degrees.map((d) {
                                   return DropdownMenuItem<int>(
                                     value: d.idDegree,
@@ -276,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(height: 28),
                               CustomButton(
-                                text: 'BUAT AKUN SISWA',
+                                text: 'BUAT AKUN ',
                                 isLoading: isLoading,
                                 icon: Icons.person_add_alt_1_rounded,
                                 onPressed: _submitRegister,

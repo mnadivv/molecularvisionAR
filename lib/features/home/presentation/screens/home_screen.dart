@@ -9,6 +9,7 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../materi/presentation/screens/materi_screen.dart';
 import '../../../molecule/presentation/screens/molecule_screen.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../quiz/presentation/screens/quiz_material_screen.dart';
 import '../widgets/menu_card.dart';
 
@@ -23,37 +24,27 @@ class _HomeScreenState extends State<HomeScreen>
     with TickerProviderStateMixin {
 
   late AnimationController _controller;
-
   late Animation<double> _fade;
-
   late Animation<Offset> _slide;
+  late int _factIndex;
 
   final List<String> chemistryFacts = [
-
     "Air (H₂O) memiliki sudut ikatan sekitar 104,5°.",
-
     "Grafit dapat menghantarkan listrik karena memiliki elektron bebas.",
-
     "Intan dan grafit tersusun dari unsur karbon yang sama.",
-
     "Asam kuat terionisasi sempurna di dalam air.",
-
     "Reaksi eksoterm melepaskan kalor ke lingkungan.",
-
     "Katalis mempercepat reaksi tanpa ikut habis.",
-
     "Atom selalu berusaha mencapai konfigurasi elektron stabil.",
-
     "Ikatan kovalen terbentuk karena penggunaan pasangan elektron bersama.",
-
     "Larutan buffer menjaga pH tetap stabil.",
-
     "Elektrolisis mengubah energi listrik menjadi energi kimia.",
   ];
 
   @override
   void initState() {
     super.initState();
+    _factIndex = DateTime.now().day % chemistryFacts.length;
 
     _controller = AnimationController(
       vsync: this,
@@ -76,6 +67,31 @@ class _HomeScreenState extends State<HomeScreen>
     );
 
     _controller.forward();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final authBloc = context.read<AuthBloc>();
+      if (authBloc.state is! Authenticated) {
+        authBloc.add(const AuthCheckRequested());
+      }
+    });
+  }
+
+  Future<void> _handleRefresh() async {
+    final authBloc = context.read<AuthBloc>();
+    authBloc.add(const AuthCheckRequested());
+
+    setState(() {
+      _factIndex = (_factIndex + 1) % chemistryFacts.length;
+    });
+
+    try {
+      await authBloc.stream
+          .firstWhere((s) => s is Authenticated || s is Unauthenticated)
+          .timeout(const Duration(seconds: 4));
+    } catch (_) {
+      // Refresh gracefully completes even on network timeout
+    }
   }
 
   @override
@@ -205,8 +221,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
     @override
   Widget build(BuildContext context) {
-    final fact =
-        chemistryFacts[DateTime.now().day % chemistryFacts.length];
+    final fact = chemistryFacts[_factIndex % chemistryFacts.length];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -256,19 +271,41 @@ class _HomeScreenState extends State<HomeScreen>
               opacity: _fade,
               child: SlideTransition(
                 position: _slide,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    22,
-                    10,
-                    22,
-                    30,
-                  ),
-                  children: [
+                child: RefreshIndicator(
+                  color: AppColors.accent,
+                  backgroundColor: AppColors.surface,
+                  displacement: 30,
+                  strokeWidth: 2.5,
+                  onRefresh: _handleRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(
+                      22,
+                      10,
+                      22,
+                      30,
+                    ),
+                    children: [
 
                     /// Top Bar (User Profile & Actions)
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, authState) {
                         final user = authState is Authenticated ? authState.user : null;
+                        final userName = (user?.name != null && user!.name.trim().isNotEmpty)
+                            ? user.name
+                            : 'Siswa MVAR';
+                        final subtitleParts = <String>[];
+                        if (user?.degree?.name != null && user!.degree!.name.trim().isNotEmpty) {
+                          subtitleParts.add(user.degree!.name);
+                        }
+                        if (user?.school != null && user!.school!.trim().isNotEmpty) {
+                          subtitleParts.add(user.school!);
+                        }
+                        final userSubtitle = subtitleParts.isNotEmpty
+                            ? subtitleParts.join(' • ')
+                            : 'Siswa • MVAR Chemistry';
 
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -282,40 +319,80 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           child: Row(
                             children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: AppColors.accent.withValues(alpha: 0.2),
-                                child: const Icon(
-                                  Icons.person_rounded,
-                                  color: AppColors.accent,
-                                  size: 22,
+                              Expanded(
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const ProfileScreen(),
+                                      ),
+                                    );
+                                    if (context.mounted) {
+                                      context.read<AuthBloc>().add(const AuthCheckRequested());
+                                    }
+                                  },
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor: AppColors.accent.withValues(alpha: 0.2),
+                                        child: const Icon(
+                                          Icons.person_rounded,
+                                          color: AppColors.accent,
+                                          size: 22,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              userName,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              userSubtitle,
+                                              style: TextStyle(
+                                                color: Colors.white.withValues(alpha: 0.6),
+                                                fontSize: 11,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user?.name ?? 'Siswa MVAR',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                              IconButton(
+                                tooltip: 'Profil & Pengaturan',
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const ProfileScreen(),
                                     ),
-                                    Text(
-                                      '${user?.degree?.name ?? 'Siswa'} • ${user?.school ?? 'MVAR Chemistry'}',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.6),
-                                        fontSize: 11,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                  );
+                                  if (context.mounted) {
+                                    context.read<AuthBloc>().add(const AuthCheckRequested());
+                                  }
+                                },
+                                splashRadius: 20,
+                                icon: const Icon(
+                                  Icons.account_circle_outlined,
+                                  color: AppColors.accent,
+                                  size: 22,
                                 ),
                               ),
                               IconButton(
@@ -531,6 +608,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
+        ),
         ],
         ),
       ),

@@ -25,24 +25,28 @@ class UserModel extends Equatable {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final map = json.containsKey('user') && json['user'] is Map<String, dynamic>
+        ? json['user'] as Map<String, dynamic>
+        : json;
+
     return UserModel(
-      idUser: json['id_user'] is int
-          ? json['id_user'] as int
-          : int.tryParse(json['id_user']?.toString() ?? '') ?? 0,
-      name: json['name'] as String? ?? '',
-      email: json['email'] as String? ?? '',
-      school: json['school'] as String?,
-      idDegree: json['id_degree'] != null
-          ? int.tryParse(json['id_degree'].toString())
+      idUser: map['id_user'] is int
+          ? map['id_user'] as int
+          : int.tryParse(map['id_user']?.toString() ?? '') ?? 0,
+      name: map['name'] as String? ?? '',
+      email: map['email'] as String? ?? '',
+      school: map['school'] as String?,
+      idDegree: map['id_degree'] != null
+          ? int.tryParse(map['id_degree'].toString())
           : null,
-      idRole: json['id_role'] != null
-          ? int.tryParse(json['id_role'].toString())
+      idRole: map['id_role'] != null
+          ? int.tryParse(map['id_role'].toString())
           : null,
-      role: json['role'] != null && json['role'] is Map<String, dynamic>
-          ? RoleModel.fromJson(json['role'] as Map<String, dynamic>)
+      role: map['role'] != null && map['role'] is Map<String, dynamic>
+          ? RoleModel.fromJson(map['role'] as Map<String, dynamic>)
           : null,
-      degree: json['degree'] != null && json['degree'] is Map<String, dynamic>
-          ? DegreeModel.fromJson(json['degree'] as Map<String, dynamic>)
+      degree: map['degree'] != null && map['degree'] is Map<String, dynamic>
+          ? DegreeModel.fromJson(map['degree'] as Map<String, dynamic>)
           : null,
     );
   }

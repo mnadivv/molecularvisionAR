@@ -88,7 +88,10 @@ class AuthRepository {
     try {
       final response = await _dioClient.get(ApiEndpoints.me);
       final data = response.data['data'] as Map<String, dynamic>? ?? {};
-      return UserModel.fromJson(data);
+      final userData = data.containsKey('user') && data['user'] is Map<String, dynamic>
+          ? data['user'] as Map<String, dynamic>
+          : data;
+      return UserModel.fromJson(userData);
     } catch (_) {
       // Jika token invalid/expired, hapus token lokal
       await _tokenStorage.deleteToken();

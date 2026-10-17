@@ -27,28 +27,9 @@ class CustomButton extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors: onPressed == null || isLoading
-              ? [
-                  Colors.grey.shade700,
-                  Colors.grey.shade800,
-                ]
-              : [
-                  AppColors.primary,
-                  AppColors.accent,
-                ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        boxShadow: onPressed == null || isLoading
-            ? []
-            : [
-                BoxShadow(
-                  color: AppColors.accent.withValues(alpha: 0.35),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+        color: onPressed == null || isLoading
+            ? Colors.grey.shade700
+            : AppColors.primary,
       ),
       child: Material(
         color: Colors.transparent,

@@ -10,6 +10,9 @@ import 'features/home/presentation/screens/splash_screen.dart';
 
 import 'core/theme/app_theme.dart';
 
+import 'features/profile/data/repositories/profile_repository.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -19,6 +22,9 @@ Future<void> main() async {
     dioClient: dioClient,
     tokenStorage: tokenStorage,
   );
+  final profileRepository = ProfileRepository(
+    dioClient: dioClient,
+  );
 
   runApp(
     MultiRepositoryProvider(
@@ -26,6 +32,7 @@ Future<void> main() async {
         RepositoryProvider<TokenStorageService>.value(value: tokenStorage),
         RepositoryProvider<DioClient>.value(value: dioClient),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
+        RepositoryProvider<ProfileRepository>.value(value: profileRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -33,6 +40,11 @@ Future<void> main() async {
             create: (context) => AuthBloc(
               authRepository: context.read<AuthRepository>(),
             )..add(const AuthCheckRequested()),
+          ),
+          BlocProvider<ProfileBloc>(
+            create: (context) => ProfileBloc(
+              repository: context.read<ProfileRepository>(),
+            ),
           ),
         ],
         child: const MVARApp(),

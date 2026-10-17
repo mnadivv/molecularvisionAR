@@ -33,11 +33,11 @@ class _LoginScreenState extends State<LoginScreen> {
   void _submitLogin() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthLoginSubmitted(
-              email: _emailController.text,
-              password: _passwordController.text,
-            ),
-          );
+        AuthLoginSubmitted(
+          email: _emailController.text,
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
@@ -57,7 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.error_outline_rounded, color: Colors.white),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -79,7 +82,9 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         builder: (context, state) {
           final isLoading = state is AuthLoading;
-          final validationErrors = state is AuthFailure ? state.validationErrors : null;
+          final validationErrors = state is AuthFailure
+              ? state.validationErrors
+              : null;
 
           return Stack(
             children: [
@@ -113,7 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
               SafeArea(
                 child: Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 20,
+                    ),
                     physics: const BouncingScrollPhysics(),
                     child: Form(
                       key: _formKey,
@@ -129,7 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 shape: BoxShape.circle,
                                 color: Colors.white.withValues(alpha: 0.06),
                                 border: Border.all(
-                                  color: AppColors.accent.withValues(alpha: 0.25),
+                                  color: AppColors.accent.withValues(
+                                    alpha: 0.25,
+                                  ),
                                   width: 1.5,
                                 ),
                               ),
@@ -172,10 +182,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 CustomTextField(
                                   controller: _emailController,
                                   label: 'Email Siswa',
-                                  hint: 'nama@sekolah.sch.id',
+                                  hint: 'Masukkan Email',
                                   prefixIcon: Icons.email_outlined,
                                   keyboardType: TextInputType.emailAddress,
-                                  errorText: validationErrors?['email']?.firstOrNull,
+                                  errorText:
+                                      validationErrors?['email']?.firstOrNull,
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
                                       return 'Email wajib diisi.';
@@ -193,7 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   hint: '••••••••',
                                   prefixIcon: Icons.lock_outline_rounded,
                                   obscureText: _obscurePassword,
-                                  errorText: validationErrors?['password']?.firstOrNull,
+                                  errorText: validationErrors?['password']
+                                      ?.firstOrNull,
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _obscurePassword
@@ -217,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 28),
                                 CustomButton(
-                                  text: 'MASUK SEBAGAI SISWA',
+                                  text: 'MASUK',
                                   isLoading: isLoading,
                                   icon: Icons.login_rounded,
                                   onPressed: _submitLogin,
