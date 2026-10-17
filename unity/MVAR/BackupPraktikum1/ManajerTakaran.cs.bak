@@ -1,0 +1,533 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Pasang di objek yang selalu aktif (mis. ScriptLogic/ManajerLatihan).
+/// Mengatur langkah takaran: bahan dari kartu ScrollBahan dijatuhkan ke tabung di rak.
+///  - Tuang  (botol akuades): muncul pilihan 1/2/3 ml. Salah = kartu salah, benar = botol miring dan cairan menetes, level naik.
+///  - Tetes  (pipet tetes): tekan tombol Tetes sebanyak yang diinginkan lalu Selesai. Jumlah tetes salah = kartu salah.
+/// Soal baru bisa lanjut kalau semua langkah takaran soal itu selesai (dicek lewat TakaranSelesai).
+/// </summary>
+public class ManajerTakaran : MonoBehaviour
+{
+    public static ManajerTakaran Instance { get; private set; }
+
+    public enum Jenis { Tuang, Tetes }
+
+    [System.Serializable]
+    public class LangkahTakaran
+    {
+        public string nama;
+        [Tooltip("Nama bahan untuk teks petunjuk (mis. akuades, NaCl, CHCl3).")]
+        public string namaBahan = "akuades";
+        [Tooltip("Panel soal tempat langkah ini berlaku.")]
+        public GameObject panelSoal;
+        [Tooltip("Kartu bahan di ScrollBahan yang diambil untuk langkah ini.")]
+        public GameObject kartu;
+        [Tooltip("Tabung (SlotA / SlotB) yang harus diisi.")]
+        public SlotTabung tabungTarget;
+        public Jenis jenis = Jenis.Tuang;
+        [Tooltip("Tuang: jumlah ml yang benar. Tetes: jumlah tetes yang benar.")]
+        public int jumlahBenar = 1;
+        public Color warnaCairan = new Color(0.6f, 0.82f, 1f, 1f);
+        [Tooltip("Titik ujung tempat cairan keluar, di ruang model asli (sebelum diputar).")]
+        public Vector3 titikKeluar;
+        [Tooltip("Putaran sumbu Z (derajat) supaya ujung menghadap ke bawah.")]
+        public float sudutMiring = 60f;
+        [Tooltip("Tinggi ujung di atas mulut tabung (satuan model rak).")]
+        public float tinggiDiAtasTabung = 0.6f;
+        [HideInInspector] public bool selesai;
+    }
+
+    [Header("=== LANGKAH TAKARAN ===")]
+    public List<LangkahTakaran> langkah = new List<LangkahTakaran>();
+    [Tooltip("Semua tabung (SlotA, SlotB). Dilepas di tabung yang salah = kartu salah.")]
+    public SlotTabung[] semuaTabung;
+
+    [Header("=== PANEL UI ===")]
+    public GameObject panelTakaran;
+    public GameObject grupVolume;
+    public GameObject grupTetes;
+    public TMP_Text teksJudul;
+    public TMP_Text teksTetes;
+    public Button[] tombolVolume;
+    public int[] nilaiVolume = { 1, 2, 3 };
+    public Button tombolTetes;
+    public Button tombolSelesai;
+    public Button tombolBatal;
+
+    [Header("=== TAMPILAN CAIRAN ===")]
+    [Tooltip("Bahan (transparan) untuk tetesan yang jatuh.")]
+    public Material materialTetes;
+    [Tooltip("Bahan (transparan) untuk cairan di dalam tabung.")]
+    public Material materialCairan;
+    [Tooltip("Bahan kaca tabung yang transparan. Dipasang ke tabung saat cairan pertama masuk supaya isinya terlihat. Kosong = tidak diganti.")]
+    public Material materialKaca;
+
+    [Header("=== UKURAN (satuan model rak) ===")]
+    public float panjangTabung = 4.2f;
+    public float jarakDasarKaca = 0.12f;
+    public float radiusCairan = 0.38f;
+    public float tinggiPerMl = 0.4f;
+    public float tinggiPerTetes = 0.04f;
+    public float maksTinggiCairan = 3.2f;
+    public int tetesPerMlAnimasi = 14;
+    public float ukuranTetes = 0.16f;
+    public int maksKlikTetes = 12;
+
+    private class CairanTabung
+    {
+        public Transform silinder;
+        public Material mat;
+        public float tinggi;
+    }
+
+    private readonly Dictionary<SlotTabung, CairanTabung> cairan = new Dictionary<SlotTabung, CairanTabung>();
+    private bool sesiAktif;
+    private int pilihanVolume = -1;
+    private bool batal;
+    private int permintaanTetes;
+    private bool tekanSelesai;
+    private int tetesAktif;
+    private GameObject rigAktif;
+
+    private void Awake()
+    {
+        Instance = this;
+        if (panelTakaran != null) panelTakaran.SetActive(false);
+
+        if (tombolVolume != null)
+        {
+            for (int i = 0; i < tombolVolume.Length; i++)
+            {
+                if (tombolVolume[i] == null) continue;
+                int nilai = (nilaiVolume != null && i < nilaiVolume.Length) ? nilaiVolume[i] : i + 1;
+                tombolVolume[i].onClick.AddListener(() => { pilihanVolume = nilai; });
+            }
+        }
+        if (tombolTetes != null) tombolTetes.onClick.AddListener(() => { permintaanTetes++; });
+        if (tombolSelesai != null) tombolSelesai.onClick.AddListener(() => { tekanSelesai = true; });
+        if (tombolBatal != null) tombolBatal.onClick.AddListener(() => { batal = true; });
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    // ---------- Dipakai ManajerPilihItem ----------
+
+    /// <summary>True kalau semua langkah takaran untuk panel soal ini sudah selesai (atau soal ini tidak punya takaran).</summary>
+    public bool TakaranSelesai(GameObject panelSoal)
+    {
+        for (int i = 0; i < langkah.Count; i++)
+        {
+            LangkahTakaran l = langkah[i];
+            if (l != null && l.panelSoal == panelSoal && !l.selesai) return false;
+        }
+        return true;
+    }
+
+    /// <summary>Kosongkan semua cairan dan kunci ulang langkah (dipanggil saat progres di-reset).</summary>
+    public void ResetSemua()
+    {
+        StopAllCoroutines();
+        if (rigAktif != null) Destroy(rigAktif);
+        rigAktif = null;
+        sesiAktif = false;
+        tetesAktif = 0;
+        if (panelTakaran != null) panelTakaran.SetActive(false);
+        foreach (KeyValuePair<SlotTabung, CairanTabung> kv in cairan)
+            if (kv.Value != null && kv.Value.silinder != null) Destroy(kv.Value.silinder.gameObject);
+        cairan.Clear();
+        for (int i = 0; i < langkah.Count; i++)
+            if (langkah[i] != null) langkah[i].selesai = false;
+    }
+
+    // ---------- Dipakai CardTahanGeser3D ----------
+
+    public void Sorot(Vector2 posisiLayar, bool aktif, Camera cam) { }
+
+    /// <summary>Dipanggil saat kartu bahan dilepas. True = model dipakai di sini (jangan dihapus oleh kartu).</summary>
+    public bool CobaTaruh(Vector2 posisiLayar, GameObject model, Camera cam, float kedalaman, GameObject kartu)
+    {
+        if (sesiAktif || model == null || cam == null) return false;
+
+        LangkahTakaran l = CariLangkah(kartu);
+        if (l == null) return false;
+
+        SlotTabung target = l.tabungTarget;
+        if (target == null || !target.SelesaiMasuk || target.Model == null) return false;
+
+        if (!target.Mengandung(posisiLayar, cam))
+        {
+            if (semuaTabung != null)
+            {
+                for (int i = 0; i < semuaTabung.Length; i++)
+                {
+                    SlotTabung s = semuaTabung[i];
+                    if (s != null && s != target && s.Mengandung(posisiLayar, cam))
+                    {
+                        if (ManajerPilihItem.Instance != null) ManajerPilihItem.Instance.TampilkanSalah();
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+
+        StartCoroutine(Sesi(l, model, cam));
+        return true;
+    }
+
+    private LangkahTakaran CariLangkah(GameObject kartu)
+    {
+        for (int i = 0; i < langkah.Count; i++)
+        {
+            LangkahTakaran l = langkah[i];
+            if (l == null || l.selesai || l.kartu != kartu) continue;
+            if (l.panelSoal != null && !l.panelSoal.activeInHierarchy) continue;
+            return l;
+        }
+        return null;
+    }
+
+    // ---------- Sesi takaran ----------
+
+    private static float EaseInOut(float k)
+    {
+        k = Mathf.Clamp01(k);
+        return k * k * (3f - 2f * k);
+    }
+
+    private void TampilkanPanel(bool tampil, LangkahTakaran l)
+    {
+        if (panelTakaran == null) return;
+        panelTakaran.SetActive(tampil);
+        if (!tampil) return;
+        bool tuang = l.jenis == Jenis.Tuang;
+        if (grupVolume != null) grupVolume.SetActive(tuang);
+        if (grupTetes != null) grupTetes.SetActive(!tuang);
+        string tabung = l.tabungTarget != null ? l.tabungTarget.namaSlot : "?";
+        if (teksJudul != null)
+        {
+            teksJudul.text = tuang
+                ? "Berapa ml " + l.namaBahan + " yang dituang ke tabung " + tabung + "?"
+                : "Teteskan " + l.namaBahan + " ke tabung " + tabung + ", lalu tekan Selesai";
+        }
+    }
+
+    private void UpdateTeksTetes(int hitung)
+    {
+        if (teksTetes != null) teksTetes.text = "Tetes: " + hitung;
+    }
+
+    private IEnumerator Sesi(LangkahTakaran l, GameObject model, Camera cam)
+    {
+        sesiAktif = true;
+        batal = false;
+        pilihanVolume = -1;
+        permintaanTetes = 0;
+        tekanSelesai = false;
+        tetesAktif = 0;
+
+        SlotTabung slot = l.tabungTarget;
+        Transform rak = slot.Model != null ? slot.Model.transform.parent : null;
+        if (rak == null)
+        {
+            Destroy(model);
+            sesiAktif = false;
+            yield break;
+        }
+
+        InfoModel3D im = model.GetComponent<InfoModel3D>();
+        InfoModel3D ir = rak.GetComponent<InfoModel3D>();
+        Vector3 skalaAsset = im != null ? im.skalaAsset : Vector3.one;
+        float fRak = ir != null ? ir.faktorSkala : 1f;
+
+        Vector3 tipMulai = model.transform.TransformPoint(l.titikKeluar);
+        float skalaMulai = Mathf.Abs(model.transform.lossyScale.x);
+        float lambdaMulai = skalaMulai / Mathf.Max(0.0001f, fRak * Mathf.Abs(skalaAsset.x));
+
+        // Rig: titik pusat = ujung keluar cairan. Model jadi anak rig, jadi diputar mengelilingi ujungnya.
+        GameObject rigGO = new GameObject("Rig_" + l.nama);
+        rigAktif = rigGO;
+        Transform root = rigGO.transform;
+        root.SetParent(rak, false);
+        root.position = tipMulai;
+        root.localRotation = Quaternion.identity;
+        root.localScale = Vector3.one * lambdaMulai;
+
+        model.transform.SetParent(root, false);
+        model.transform.localScale = skalaAsset;
+        model.transform.localRotation = Quaternion.identity;
+        model.transform.localPosition = -Vector3.Scale(l.titikKeluar, skalaAsset);
+
+        try
+        {
+            // 1. Terbang ke atas mulut tabung
+            float sudutAwal = l.jenis == Jenis.Tetes ? l.sudutMiring : l.sudutMiring * 0.3f;
+            Vector3 pourLokal = new Vector3(slot.lubangLokal.x, slot.lubangLokal.y + panjangTabung + l.tinggiDiAtasTabung, slot.lubangLokal.z);
+            float t = 0f;
+            const float durTerbang = 0.5f;
+            while (t < durTerbang)
+            {
+                if (rak == null) yield break;
+                t += Time.deltaTime;
+                float e = EaseInOut(t / durTerbang);
+                root.position = Vector3.Lerp(tipMulai, rak.TransformPoint(pourLokal), e);
+                root.localRotation = Quaternion.Euler(0f, 0f, sudutAwal * e);
+                root.localScale = Vector3.one * Mathf.Lerp(lambdaMulai, 1f, e);
+                yield return null;
+            }
+            root.localPosition = pourLokal;
+            root.localRotation = Quaternion.Euler(0f, 0f, sudutAwal);
+            root.localScale = Vector3.one;
+
+            if (l.jenis == Jenis.Tuang)
+            {
+                // 2a. Pilih volume
+                TampilkanPanel(true, l);
+                while (true)
+                {
+                    while (pilihanVolume < 0 && !batal)
+                    {
+                        if (rak == null) yield break;
+                        yield return null;
+                    }
+                    if (batal) yield break;
+                    int p = pilihanVolume;
+                    pilihanVolume = -1;
+                    if (p == l.jumlahBenar) break;
+                    if (ManajerPilihItem.Instance != null) ManajerPilihItem.Instance.TampilkanSalah();
+                }
+                TampilkanPanel(false, l);
+
+                // 3a. Miring lalu menetes lewat ujung botol
+                yield return Putar(root, sudutAwal, l.sudutMiring, 0.5f);
+                CairanTabung c = AmbilCairan(slot, rak, l.warnaCairan);
+                int jumlah = Mathf.Max(1, l.jumlahBenar * tetesPerMlAnimasi);
+                float tambah = (l.jumlahBenar * tinggiPerMl) / jumlah;
+                for (int i = 0; i < jumlah; i++)
+                {
+                    if (rak == null) yield break;
+                    LepasTetes(root.position, slot, rak, c, tambah, l.warnaCairan);
+                    yield return new WaitForSeconds(0.07f);
+                }
+                while (tetesAktif > 0) yield return null;
+                yield return Putar(root, l.sudutMiring, 0f, 0.4f);
+                yield return Hilang(root, 0.3f);
+                l.selesai = true;
+            }
+            else
+            {
+                // 2b. Tekan Tetes sebanyak yang diinginkan, lalu Selesai
+                int hitung = 0;
+                CairanTabung c = AmbilCairan(slot, rak, l.warnaCairan);
+                TampilkanPanel(true, l);
+                UpdateTeksTetes(hitung);
+                while (true)
+                {
+                    if (rak == null || batal) yield break;
+
+                    if (permintaanTetes > 0)
+                    {
+                        permintaanTetes--;
+                        if (hitung < maksKlikTetes)
+                        {
+                            hitung++;
+                            UpdateTeksTetes(hitung);
+                            LepasTetes(root.position, slot, rak, c, tinggiPerTetes, l.warnaCairan);
+                            StartCoroutine(Denyut(root));
+                        }
+                    }
+
+                    if (tekanSelesai)
+                    {
+                        tekanSelesai = false;
+                        while (tetesAktif > 0) yield return null;
+                        if (hitung == l.jumlahBenar) break;
+
+                        // Takaran tidak sesuai: kartu salah, tetesan ditarik kembali, ulangi
+                        if (ManajerPilihItem.Instance != null) ManajerPilihItem.Instance.TampilkanSalah();
+                        c.tinggi = Mathf.Max(0f, c.tinggi - hitung * tinggiPerTetes);
+                        TerapkanCairan(slot, c);
+                        hitung = 0;
+                        UpdateTeksTetes(hitung);
+                    }
+                    yield return null;
+                }
+                TampilkanPanel(false, l);
+                yield return Hilang(root, 0.3f);
+                l.selesai = true;
+            }
+        }
+        finally
+        {
+            if (panelTakaran != null) panelTakaran.SetActive(false);
+            if (rigGO != null) Destroy(rigGO);
+            if (rigAktif == rigGO) rigAktif = null;
+            sesiAktif = false;
+        }
+    }
+
+    private IEnumerator Putar(Transform root, float dari, float ke, float durasi)
+    {
+        float t = 0f;
+        while (t < durasi)
+        {
+            if (root == null) yield break;
+            t += Time.deltaTime;
+            root.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(dari, ke, EaseInOut(t / durasi)));
+            yield return null;
+        }
+        if (root != null) root.localRotation = Quaternion.Euler(0f, 0f, ke);
+    }
+
+    private IEnumerator Hilang(Transform root, float durasi)
+    {
+        float t = 0f;
+        while (t < durasi)
+        {
+            if (root == null) yield break;
+            t += Time.deltaTime;
+            root.localScale = Vector3.one * Mathf.Max(0.0001f, 1f - EaseInOut(t / durasi));
+            yield return null;
+        }
+    }
+
+    private IEnumerator Denyut(Transform root)
+    {
+        float t = 0f;
+        const float dur = 0.14f;
+        while (t < dur)
+        {
+            if (root == null) yield break;
+            t += Time.deltaTime;
+            float s = 1f - 0.06f * Mathf.Sin(Mathf.Clamp01(t / dur) * Mathf.PI);
+            root.localScale = Vector3.one * s;
+            yield return null;
+        }
+        if (root != null) root.localScale = Vector3.one;
+    }
+
+    // ---------- Cairan dan tetesan ----------
+
+    private static void SetWarna(Material m, Color c)
+    {
+        if (m == null) return;
+        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+        if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+    }
+
+    private CairanTabung AmbilCairan(SlotTabung slot, Transform rak, Color warna)
+    {
+        CairanTabung c;
+        if (cairan.TryGetValue(slot, out c) && c != null && c.silinder != null)
+        {
+            if (c.mat != null)
+            {
+                Color lama = c.mat.HasProperty("_BaseColor") ? c.mat.GetColor("_BaseColor") : Color.white;
+                Color baru = Color.Lerp(lama, warna, 0.5f);
+                baru.a = lama.a;
+                SetWarna(c.mat, baru);
+            }
+            return c;
+        }
+
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        go.name = "Cairan_" + slot.namaSlot;
+        Collider col = go.GetComponent<Collider>();
+        if (col != null) Destroy(col);
+        go.transform.SetParent(rak, false);
+        go.transform.localRotation = Quaternion.identity;
+
+        c = new CairanTabung();
+        c.silinder = go.transform;
+        Renderer r = go.GetComponent<Renderer>();
+        if (materialCairan != null)
+        {
+            c.mat = new Material(materialCairan);
+            Color dasar = c.mat.HasProperty("_BaseColor") ? c.mat.GetColor("_BaseColor") : Color.white;
+            Color w = warna;
+            w.a = dasar.a;
+            SetWarna(c.mat, w);
+            r.sharedMaterial = c.mat;
+        }
+        cairan[slot] = c;
+
+        // Kaca tabung dibuat transparan supaya cairan terlihat
+        if (materialKaca != null && slot.Model != null)
+        {
+            Renderer rt = slot.Model.GetComponentInChildren<Renderer>();
+            if (rt != null) rt.sharedMaterial = materialKaca;
+        }
+
+        TerapkanCairan(slot, c);
+        return c;
+    }
+
+    private void TerapkanCairan(SlotTabung slot, CairanTabung c)
+    {
+        if (c == null || c.silinder == null) return;
+        float h = Mathf.Clamp(c.tinggi, 0f, maksTinggiCairan);
+        c.silinder.gameObject.SetActive(h > 0.001f);
+        c.silinder.localScale = new Vector3(radiusCairan * 2f, Mathf.Max(h * 0.5f, 0.0001f), radiusCairan * 2f);
+        c.silinder.localPosition = new Vector3(slot.lubangLokal.x, slot.lubangLokal.y + jarakDasarKaca + h * 0.5f, slot.lubangLokal.z);
+    }
+
+    private void LepasTetes(Vector3 dariDunia, SlotTabung slot, Transform rak, CairanTabung c, float tambahTinggi, Color warna)
+    {
+        StartCoroutine(Jatuh(dariDunia, slot, rak, c, tambahTinggi, warna));
+    }
+
+    private IEnumerator Jatuh(Vector3 dariDunia, SlotTabung slot, Transform rak, CairanTabung c, float tambahTinggi, Color warna)
+    {
+        tetesAktif++;
+        GameObject d = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        Collider col = d.GetComponent<Collider>();
+        if (col != null) Destroy(col);
+        Renderer r = d.GetComponent<Renderer>();
+        if (materialTetes != null)
+        {
+            r.sharedMaterial = materialTetes;
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            Color dasar = materialTetes.HasProperty("_BaseColor") ? materialTetes.GetColor("_BaseColor") : Color.white;
+            Color w = warna;
+            w.a = dasar.a;
+            mpb.SetColor("_BaseColor", w);
+            mpb.SetColor("_Color", w);
+            r.SetPropertyBlock(mpb);
+        }
+        d.transform.SetParent(rak, false);
+        d.transform.localScale = Vector3.one * ukuranTetes;
+        Vector3 awal = rak.InverseTransformPoint(dariDunia);
+        d.transform.localPosition = awal;
+
+        float permukaan = slot.lubangLokal.y + jarakDasarKaca + Mathf.Clamp(c.tinggi, 0f, maksTinggiCairan);
+        Vector3 akhir = new Vector3(slot.lubangLokal.x, permukaan, slot.lubangLokal.z);
+        float jarak = Mathf.Max(0.05f, awal.y - akhir.y);
+        float dur = Mathf.Max(0.12f, Mathf.Sqrt(2f * jarak / 40f));
+
+        float t = 0f;
+        while (t < dur)
+        {
+            if (rak == null || d == null) break;
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / dur);
+            d.transform.localPosition = new Vector3(Mathf.Lerp(awal.x, akhir.x, k), Mathf.Lerp(awal.y, akhir.y, k * k), Mathf.Lerp(awal.z, akhir.z, k));
+            yield return null;
+        }
+
+        if (d != null) Destroy(d);
+        if (c != null && c.silinder != null)
+        {
+            c.tinggi += tambahTinggi;
+            TerapkanCairan(slot, c);
+        }
+        tetesAktif = Mathf.Max(0, tetesAktif - 1);
+    }
+}

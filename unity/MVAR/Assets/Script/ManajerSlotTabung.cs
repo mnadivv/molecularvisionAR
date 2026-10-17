@@ -13,8 +13,10 @@ public class ManajerSlotTabung : MonoBehaviour
     public SlotTabung[] slot;
     [Tooltip("Area cadangan (TargetDrop). Drop di sini tapi bukan tepat di slot = masuk ke slot kosong berikutnya")]
     public RectTransform areaCadangan;
+    [Tooltip("Jadikan pengelola bawaan (dipakai kartu yang manajerSlot-nya kosong). Matikan untuk pengelola tambahan, mis. rak")]
+    public bool jadikanDefault = true;
 
-    private void Awake() { Instance = this; }
+    private void Awake() { if (jadikanDefault) Instance = this; }
     private void OnDestroy() { if (Instance == this) Instance = null; }
 
     private SlotTabung SlotKosongPertama()
@@ -57,6 +59,15 @@ public class ManajerSlotTabung : MonoBehaviour
         if (slot == null) return;
         for (int i = 0; i < slot.Length; i++)
             if (slot[i] != null) slot[i].SetSorot(aktif && slot[i].Mengandung(posisiLayar, cam));
+    }
+
+    /// <summary>True kalau semua slot sudah terisi dan animasi masuknya selesai.</summary>
+    public bool SemuaSelesai()
+    {
+        if (slot == null || slot.Length == 0) return true;
+        for (int i = 0; i < slot.Length; i++)
+            if (slot[i] != null && !slot[i].SelesaiMasuk) return false;
+        return true;
     }
 
     /// <summary>Kosongkan semua slot (bisa dipanggil dari tombol reset).</summary>
