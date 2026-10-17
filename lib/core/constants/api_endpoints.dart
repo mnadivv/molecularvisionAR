@@ -33,6 +33,7 @@ class ApiEndpoints {
   static const String categories = '/categories';
   static const String molecules = '/molecules';
   static const String materials = '/materials';
+  static String materialDetail(int id) => '/materials/$id';
 
   // ==========================================
   // Progres Belajar (Materi, Molekul, Kategori)

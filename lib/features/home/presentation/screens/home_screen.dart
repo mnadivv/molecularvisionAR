@@ -20,9 +20,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
-
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<Offset> _slide;
@@ -51,20 +49,12 @@ class _HomeScreenState extends State<HomeScreen>
       duration: const Duration(milliseconds: 900),
     );
 
-    _fade = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    );
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     _slide = Tween<Offset>(
       begin: const Offset(0, .12),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
 
@@ -110,7 +100,14 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             Icon(Icons.logout_rounded, color: Colors.redAccent),
             SizedBox(width: 10),
-            Text('Keluar Akun', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Keluar Akun',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         content: const Text(
@@ -125,13 +122,21 @@ class _HomeScreenState extends State<HomeScreen>
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () {
               Navigator.of(ctx).pop();
               context.read<AuthBloc>().add(const AuthLogoutRequested());
             },
-            child: const Text('Keluar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Keluar',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -143,9 +148,7 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (_) {
         return Padding(
@@ -153,11 +156,7 @@ class _HomeScreenState extends State<HomeScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
-              Image.asset(
-                "assets/images/logo_circle.png",
-                width: 80,
-              ),
+              Image.asset("assets/images/logo_circle.png", width: 80),
 
               const SizedBox(height: 16),
 
@@ -172,12 +171,7 @@ class _HomeScreenState extends State<HomeScreen>
 
               const SizedBox(height: 8),
 
-              Text(
-                "Version 1.0.0",
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
+              Text("Version 1.0.0", style: TextStyle(color: Colors.white70)),
 
               const SizedBox(height: 20),
 
@@ -186,40 +180,27 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 20),
 
               const ListTile(
-                leading: Icon(
-                  Icons.school,
-                  color: Colors.white,
-                ),
+                leading: Icon(Icons.school, color: Colors.white),
                 title: Text(
                   "Universitas Jember",
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
 
               const ListTile(
-                leading: Icon(
-                  Icons.emoji_events,
-                  color: Colors.white,
-                ),
-                title: Text(
-                  "LIDM 2026",
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
+                leading: Icon(Icons.emoji_events, color: Colors.white),
+                title: Text("LIDM 2026", style: TextStyle(color: Colors.white)),
               ),
 
               const SizedBox(height: 20),
-
             ],
           ),
         );
       },
     );
   }
-    @override
+
+  @override
   Widget build(BuildContext context) {
     final fact = chemistryFacts[_factIndex % chemistryFacts.length];
 
@@ -235,381 +216,431 @@ class _HomeScreenState extends State<HomeScreen>
           }
         },
         child: Stack(
-        children: [
-
-          /// Background Molekul Kiri Atas
-          Positioned(
-            top: -70,
-            left: -60,
-            child: Opacity(
-              opacity: 0.08,
-              child: Image.asset(
-                "assets/images/bg_molecule.png",
-                width: 220,
+          children: [
+            /// Background Molekul Kiri Atas
+            Positioned(
+              top: -70,
+              left: -60,
+              child: Opacity(
+                opacity: 0.08,
+                child: Image.asset("assets/images/bg_molecule.png", width: 220),
               ),
             ),
-          ),
 
-          /// Background Molekul Kanan Bawah
-          Positioned(
-            bottom: -80,
-            right: -70,
-            child: Opacity(
-              opacity: 0.08,
-              child: Transform.rotate(
-                angle: 0.5,
-                child: Image.asset(
-                  "assets/images/bg_molecule.png",
-                  width: 250,
+            /// Background Molekul Kanan Bawah
+            Positioned(
+              bottom: -80,
+              right: -70,
+              child: Opacity(
+                opacity: 0.08,
+                child: Transform.rotate(
+                  angle: 0.5,
+                  child: Image.asset(
+                    "assets/images/bg_molecule.png",
+                    width: 250,
+                  ),
                 ),
               ),
             ),
-          ),
 
-          SafeArea(
-            child: FadeTransition(
-              opacity: _fade,
-              child: SlideTransition(
-                position: _slide,
-                child: RefreshIndicator(
-                  color: AppColors.accent,
-                  backgroundColor: AppColors.surface,
-                  displacement: 30,
-                  strokeWidth: 2.5,
-                  onRefresh: _handleRefresh,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(
-                      22,
-                      10,
-                      22,
-                      30,
-                    ),
-                    children: [
+            SafeArea(
+              child: FadeTransition(
+                opacity: _fade,
+                child: SlideTransition(
+                  position: _slide,
+                  child: RefreshIndicator(
+                    color: AppColors.accent,
+                    backgroundColor: AppColors.surface,
+                    displacement: 30,
+                    strokeWidth: 2.5,
+                    onRefresh: _handleRefresh,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 30),
+                      children: [
+                        /// Top Bar (User Profile & Actions)
+                        BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, authState) {
+                            final user = authState is Authenticated
+                                ? authState.user
+                                : null;
+                            final userName =
+                                (user?.name != null &&
+                                    user!.name.trim().isNotEmpty)
+                                ? user.name
+                                : 'Siswa MVAR';
+                            final subtitleParts = <String>[];
+                            if (user?.degree?.name != null &&
+                                user!.degree!.name.trim().isNotEmpty) {
+                              subtitleParts.add(user.degree!.name);
+                            }
+                            if (user?.school != null &&
+                                user!.school!.trim().isNotEmpty) {
+                              subtitleParts.add(user.school!);
+                            }
+                            final userSubtitle = subtitleParts.isNotEmpty
+                                ? subtitleParts.join(' • ')
+                                : 'Siswa • MVAR Chemistry';
 
-                    /// Top Bar (User Profile & Actions)
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, authState) {
-                        final user = authState is Authenticated ? authState.user : null;
-                        final userName = (user?.name != null && user!.name.trim().isNotEmpty)
-                            ? user.name
-                            : 'Siswa MVAR';
-                        final subtitleParts = <String>[];
-                        if (user?.degree?.name != null && user!.degree!.name.trim().isNotEmpty) {
-                          subtitleParts.add(user.degree!.name);
-                        }
-                        if (user?.school != null && user!.school!.trim().isNotEmpty) {
-                          subtitleParts.add(user.school!);
-                        }
-                        final userSubtitle = subtitleParts.isNotEmpty
-                            ? subtitleParts.join(' • ')
-                            : 'Siswa • MVAR Chemistry';
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF38438A),
+                                    Color(0xFF252F6B),
+                                  ],
+                                ),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                  width: 1.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.22),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(14),
+                                      onTap: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const ProfileScreen(),
+                                          ),
+                                        );
+                                        if (context.mounted) {
+                                          context.read<AuthBloc>().add(
+                                            const AuthCheckRequested(),
+                                          );
+                                        }
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  userName,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 0.2,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  userSubtitle,
+                                                  style: TextStyle(
+                                                    color: Colors.white
+                                                        .withValues(alpha: 0.7),
+                                                    fontSize: 11,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          tooltip: 'Profil & Pengaturan',
+                                          onPressed: () async {
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const ProfileScreen(),
+                                              ),
+                                            );
+                                            if (context.mounted) {
+                                              context.read<AuthBloc>().add(
+                                                const AuthCheckRequested(),
+                                              );
+                                            }
+                                          },
+                                          splashRadius: 18,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 36,
+                                            minHeight: 36,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          icon: const Icon(
+                                            Icons.account_circle_outlined,
+                                            color: AppColors.accent,
+                                            size: 21,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          tooltip: 'Tentang Aplikasi',
+                                          onPressed: _showAbout,
+                                          splashRadius: 18,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 36,
+                                            minHeight: 36,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          icon: const Icon(
+                                            Icons.info_outline_rounded,
+                                            color: Colors.white70,
+                                            size: 21,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          tooltip: 'Keluar',
+                                          onPressed: _confirmLogout,
+                                          splashRadius: 18,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 36,
+                                            minHeight: 36,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          icon: const Icon(
+                                            Icons.logout_rounded,
+                                            color: Colors.redAccent,
+                                            size: 21,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
 
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
+                        const SizedBox(height: 50),
+
+                        /// Logo Circle
+                        Hero(
+                          tag: "logo",
+                          child: Center(
+                            child: Image.asset(
+                              "assets/images/logo_circle.png",
+                              width: 110,
                             ),
                           ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// Logo Text
+                        Center(
+                          child: Image.asset(
+                            "assets/images/logo_text.png",
+                            width: 230,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        const Center(
+                          child: Text(
+                            "Bring Chemistry To Life",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 50),
+
+                        /// Chemistry Fact
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF38438A), Color(0xFF252F6B)],
+                            ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.16),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.22),
+                                blurRadius: 14,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const ProfileScreen(),
-                                      ),
-                                    );
-                                    if (context.mounted) {
-                                      context.read<AuthBloc>().add(const AuthCheckRequested());
-                                    }
-                                  },
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 20,
-                                        backgroundColor: AppColors.accent.withValues(alpha: 0.2),
-                                        child: const Icon(
-                                          Icons.person_rounded,
-                                          color: AppColors.accent,
-                                          size: 22,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "Chemistry Fact",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.2,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              userName,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            Text(
-                                              userSubtitle,
-                                              style: TextStyle(
-                                                color: Colors.white.withValues(alpha: 0.6),
-                                                fontSize: 11,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: 'Profil & Pengaturan',
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const ProfileScreen(),
+                                        SizedBox(width: 2),
+                                        Icon(Icons.star, color: Colors.amber),
+                                      ],
                                     ),
-                                  );
-                                  if (context.mounted) {
-                                    context.read<AuthBloc>().add(const AuthCheckRequested());
-                                  }
-                                },
-                                splashRadius: 20,
-                                icon: const Icon(
-                                  Icons.account_circle_outlined,
-                                  color: AppColors.accent,
-                                  size: 22,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: _showAbout,
-                                splashRadius: 20,
-                                icon: const Icon(
-                                  Icons.info_outline_rounded,
-                                  color: Colors.white70,
-                                  size: 22,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: _confirmLogout,
-                                splashRadius: 20,
-                                icon: const Icon(
-                                  Icons.logout_rounded,
-                                  color: Colors.redAccent,
-                                  size: 22,
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      fact,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: .8,
+                                        ),
+                                        height: 1.45,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    /// Logo Circle
-                    Hero(
-                      tag: "logo",
-                      child: Center(
-                        child: Image.asset(
-                          "assets/images/logo_circle.png",
-                          width: 110,
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 18),
+                        const SizedBox(height: 15),
 
-                    /// Logo Text
-                    Center(
-                      child: Image.asset(
-                        "assets/images/logo_text.png",
-                        width: 230,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    const Center(
-                      child: Text(
-                        "Bring Chemistry To Life",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                          letterSpacing: 1,
+                        MenuCard(
+                          icon: Icons.science_rounded,
+                          title: "Daftar Molekul",
+                          subtitle:
+                              "Pelajari struktur, bentuk, dan sifat molekul.",
+                          iconColor: Colors.deepPurpleAccent,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MoleculeScreen(),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// Chemistry Fact
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: .08),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: .12),
+                        MenuCard(
+                          icon: Icons.menu_book_rounded,
+                          title: "Materi Pembelajaran",
+                          subtitle:
+                              "Pelajari 12 materi kimia secara interaktif.",
+                          iconColor: Colors.orange,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MateriScreen(),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
 
-                          const Icon(
-                            Icons.lightbulb_rounded,
-                            color: Colors.amber,
-                            size: 30,
-                          ),
+                        /// =========================
+                        /// Menu Quiz
+                        /// =========================
+                        MenuCard(
+                          icon: Icons.quiz_rounded,
+                          title: "Latihan Soal",
+                          subtitle:
+                              "Uji pemahamanmu dengan soal-soal interaktif.",
+                          iconColor: Colors.green,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const QuizMaterialScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        MenuCard(
+                          icon: Icons.view_in_ar_rounded,
+                          title: "Virtual Laboratory AR",
+                          subtitle:
+                              "Visualisasikan molekul dalam bentuk 3D menggunakan kamera.",
+                          iconColor: Colors.cyan,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ARMenuScreen(),
+                              ),
+                            );
+                          },
+                        ),
 
-                          const SizedBox(width: 15),
+                        const SizedBox(height: 25),
 
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-
-                                const Text(
-                                  "Chemistry Fact",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                Text(
-                                  fact,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(
-                                      alpha: .75,
-                                    ),
-                                    height: 1.5,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
+                        Center(
+                          child: Text(
+                            "© 2026 Molecular Vision AR",
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: .55),
+                              fontSize: 13,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-                    /// =========================
-                    /// Menu Materi
-                    /// =========================
-                    MenuCard(
-                      icon: Icons.menu_book_rounded,
-                      title: "Materi Pembelajaran",
-                      subtitle:
-                          "Pelajari 12 materi kimia secara interaktif.",
-                      iconColor: Colors.orange,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MateriScreen(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    /// =========================
-                    /// Menu AR
-                    /// =========================
-                    MenuCard(
-                      icon: Icons.view_in_ar_rounded,
-                      title: "Augmented Reality",
-                      subtitle:
-                          "Visualisasikan molekul dalam bentuk 3D menggunakan kamera.",
-                      iconColor: Colors.cyan,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ARMenuScreen(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    /// =========================
-                    /// Menu Molekul
-                    /// =========================
-                    MenuCard(
-                      icon: Icons.science_rounded,
-                      title: "Detail Molekul",
-                      subtitle:
-                          "Pelajari struktur, bentuk, dan sifat molekul.",
-                      iconColor: Colors.deepPurpleAccent,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MoleculeScreen(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    /// =========================
-                    /// Menu Quiz
-                    /// =========================
-                    MenuCard(
-                      icon: Icons.quiz_rounded,
-                      title: "Quiz",
-                      subtitle:
-                          "Uji pemahamanmu dengan soal-soal interaktif.",
-                      iconColor: Colors.green,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const QuizMaterialScreen(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    Center(
-                      child: Text(
-                        "© 2026 Molecular Vision AR",
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: .55),
-                          fontSize: 13,
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 10),
-                  ],
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-        ],
+          ],
         ),
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// Dropdown selector bergaya Glassmorphism untuk jenjang/kelas
 class CustomDropdown<T> extends StatelessWidget {
@@ -33,31 +32,39 @@ class CustomDropdown<T> extends StatelessWidget {
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: 13.5,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: errorText != null
-                  ? Colors.redAccent.withValues(alpha: 0.8)
-                  : Colors.white.withValues(alpha: 0.15),
-              width: 1.2,
+                  ? Colors.redAccent
+                  : Colors.transparent,
+              width: errorText != null ? 1.4 : 0.0,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
             child: Row(
               children: [
                 if (prefixIcon != null) ...[
                   Icon(
                     prefixIcon,
-                    color: AppColors.accent.withValues(alpha: 0.8),
-                    size: 22,
+                    color: Colors.grey.shade600,
+                    size: 20,
                   ),
                   const SizedBox(width: 12),
                 ],
@@ -71,7 +78,7 @@ class CustomDropdown<T> extends StatelessWidget {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.accent,
+                                  Colors.grey.shade600,
                                 ),
                               ),
                             ),
@@ -79,7 +86,7 @@ class CustomDropdown<T> extends StatelessWidget {
                             Text(
                               'Memuat data...',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Colors.grey.shade600,
                                 fontSize: 14,
                               ),
                             ),
@@ -92,18 +99,19 @@ class CustomDropdown<T> extends StatelessWidget {
                             hint: Text(
                               hint,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.35),
+                                color: Colors.grey.shade500,
                                 fontSize: 14,
                               ),
                             ),
-                            dropdownColor: const Color(0xFF0C2454),
-                            icon: const Icon(
+                            dropdownColor: Colors.white,
+                            icon: Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color: Colors.white70,
+                              color: Colors.grey.shade600,
                             ),
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
+                              color: Color(0xFF1E293B),
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w500,
                             ),
                             items: items,
                             onChanged: onChanged,
@@ -118,13 +126,27 @@ class CustomDropdown<T> extends StatelessWidget {
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.only(left: 6),
-            child: Text(
-              errorText!,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.redAccent,
+                  size: 15,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    errorText!,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

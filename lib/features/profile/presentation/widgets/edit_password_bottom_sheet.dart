@@ -152,7 +152,7 @@ class _EditPasswordBottomSheetState extends State<EditPasswordBottomSheet> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.white70,
+                        color: Colors.grey.shade600,
                         size: 20,
                       ),
                       onPressed: () {
@@ -181,7 +181,7 @@ class _EditPasswordBottomSheetState extends State<EditPasswordBottomSheet> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.white70,
+                        color: Colors.grey.shade600,
                         size: 20,
                       ),
                       onPressed: () {
@@ -212,7 +212,7 @@ class _EditPasswordBottomSheetState extends State<EditPasswordBottomSheet> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.white70,
+                        color: Colors.grey.shade600,
                         size: 20,
                       ),
                       onPressed: () {

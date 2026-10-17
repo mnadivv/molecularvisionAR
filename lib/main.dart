@@ -10,6 +10,7 @@ import 'features/home/presentation/screens/splash_screen.dart';
 
 import 'core/theme/app_theme.dart';
 
+import 'features/materi/data/repositories/materi_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
 
@@ -25,6 +26,9 @@ Future<void> main() async {
   final profileRepository = ProfileRepository(
     dioClient: dioClient,
   );
+  final materiRepository = MateriRepository(
+    dioClient: dioClient,
+  );
 
   runApp(
     MultiRepositoryProvider(
@@ -33,6 +37,7 @@ Future<void> main() async {
         RepositoryProvider<DioClient>.value(value: dioClient),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),
+        RepositoryProvider<MateriRepository>.value(value: materiRepository),
       ],
       child: MultiBlocProvider(
         providers: [
