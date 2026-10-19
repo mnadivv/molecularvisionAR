@@ -8,7 +8,7 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../materi/presentation/screens/materi_screen.dart';
-import '../../../molecule/presentation/screens/molecule_screen.dart';
+import '../../../molecule/presentation/screens/molecule_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../quiz/presentation/screens/quiz_material_screen.dart';
 import '../widgets/menu_card.dart';
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const MoleculeScreen(),
+                                builder: (_) => const MoleculeListScreen(),
                               ),
                             );
                           },

@@ -321,15 +321,21 @@ class _MateriViewState extends State<_MateriView> {
                                   itemCount: state.materials.length,
                                   itemBuilder: (context, index) {
                                     final material = state.materials[index];
+                                    final isCompleted = state.completedMaterialIds
+                                        .contains(material.idMaterial);
                                     return MateriListCard(
                                       material: material,
                                       index: index,
+                                      isCompleted: isCompleted,
                                       onTap: () {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) => MateriDetailScreen(
-                                              material: material,
+                                            builder: (_) => BlocProvider.value(
+                                              value: context.read<MateriBloc>(),
+                                              child: MateriDetailScreen(
+                                                material: material,
+                                              ),
                                             ),
                                           ),
                                         );

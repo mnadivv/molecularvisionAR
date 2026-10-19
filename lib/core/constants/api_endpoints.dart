@@ -32,6 +32,7 @@ class ApiEndpoints {
   static const String degrees = '/degrees';
   static const String categories = '/categories';
   static const String molecules = '/molecules';
+  static String moleculeDetail(int id) => '/molecules/$id';
   static const String materials = '/materials';
   static String materialDetail(int id) => '/materials/$id';
 

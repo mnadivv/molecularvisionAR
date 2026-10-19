@@ -23,6 +23,8 @@ class MateriLoaded extends MateriState {
   final int? selectedCategoryId;
   final String searchQuery;
   final bool isFiltering;
+  final Set<int> completedMaterialIds;
+  final int? progressSuccessMaterialId;
 
   const MateriLoaded({
     required this.categories,
@@ -30,6 +32,8 @@ class MateriLoaded extends MateriState {
     this.selectedCategoryId,
     this.searchQuery = '',
     this.isFiltering = false,
+    this.completedMaterialIds = const {},
+    this.progressSuccessMaterialId,
   });
 
   MateriLoaded copyWith({
@@ -39,6 +43,8 @@ class MateriLoaded extends MateriState {
     bool clearSelectedCategory = false,
     String? searchQuery,
     bool? isFiltering,
+    Set<int>? completedMaterialIds,
+    int? progressSuccessMaterialId,
   }) {
     return MateriLoaded(
       categories: categories ?? this.categories,
@@ -48,6 +54,8 @@ class MateriLoaded extends MateriState {
           : (selectedCategoryId ?? this.selectedCategoryId),
       searchQuery: searchQuery ?? this.searchQuery,
       isFiltering: isFiltering ?? this.isFiltering,
+      completedMaterialIds: completedMaterialIds ?? this.completedMaterialIds,
+      progressSuccessMaterialId: progressSuccessMaterialId,
     );
   }
 
@@ -58,6 +66,8 @@ class MateriLoaded extends MateriState {
         selectedCategoryId,
         searchQuery,
         isFiltering,
+        completedMaterialIds,
+        progressSuccessMaterialId,
       ];
 }
 

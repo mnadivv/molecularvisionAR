@@ -52,4 +52,35 @@ class MateriRepository {
     final data = response.data['data'] as Map<String, dynamic>;
     return MaterialModel.fromJson(data);
   }
+
+  /// Mengambil daftar ID materi yang sudah diselesaikan siswa dari endpoint progress
+  Future<Set<int>> getCompletedMaterialIds() async {
+    try {
+      final response = await _dioClient.get(ApiEndpoints.progress);
+      final data = response.data['data'] as Map<String, dynamic>? ?? {};
+      final completedIds = data['completed_ids'] as Map<String, dynamic>? ?? {};
+      final list = completedIds['materials'] as List<dynamic>? ?? [];
+      return list
+          .map((e) => int.tryParse(e.toString()) ?? 0)
+          .where((id) => id > 0)
+          .toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// Menyimpan progres membaca materi pembelajaran kimia siswa ke backend
+  Future<bool> saveMaterialProgress(
+    int idMaterial, {
+    bool isCompleted = true,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.progressMaterial,
+      data: {
+        'id_material': idMaterial,
+        'is_completed': isCompleted,
+      },
+    );
+    return response.data['success'] == true;
+  }
 }
