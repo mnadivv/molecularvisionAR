@@ -25,6 +25,7 @@ class MateriLoaded extends MateriState {
   final bool isFiltering;
   final Set<int> completedMaterialIds;
   final int? progressSuccessMaterialId;
+  final int totalMaterialsCount;
 
   const MateriLoaded({
     required this.categories,
@@ -34,7 +35,10 @@ class MateriLoaded extends MateriState {
     this.isFiltering = false,
     this.completedMaterialIds = const {},
     this.progressSuccessMaterialId,
-  });
+    int? totalMaterialsCount,
+  }) : totalMaterialsCount = totalMaterialsCount ?? materials.length;
+
+  int get completedMaterialsCount => completedMaterialIds.length;
 
   MateriLoaded copyWith({
     List<CategoryModel>? categories,
@@ -45,6 +49,7 @@ class MateriLoaded extends MateriState {
     bool? isFiltering,
     Set<int>? completedMaterialIds,
     int? progressSuccessMaterialId,
+    int? totalMaterialsCount,
   }) {
     return MateriLoaded(
       categories: categories ?? this.categories,
@@ -56,6 +61,7 @@ class MateriLoaded extends MateriState {
       isFiltering: isFiltering ?? this.isFiltering,
       completedMaterialIds: completedMaterialIds ?? this.completedMaterialIds,
       progressSuccessMaterialId: progressSuccessMaterialId,
+      totalMaterialsCount: totalMaterialsCount ?? this.totalMaterialsCount,
     );
   }
 
@@ -68,6 +74,7 @@ class MateriLoaded extends MateriState {
         isFiltering,
         completedMaterialIds,
         progressSuccessMaterialId,
+        totalMaterialsCount,
       ];
 }
 

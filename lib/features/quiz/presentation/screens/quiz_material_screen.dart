@@ -347,7 +347,11 @@ class _QuizMaterialViewState extends State<_QuizMaterialView> {
                             const SizedBox(height: 18),
 
                             // Hero Banner Card
-                            const QuizBannerCard(),
+                            QuizBannerCard(
+                              completedCount:
+                                  loadedState.completedCategoriesCount,
+                              totalCount: loadedState.totalCategoriesCount,
+                            ),
 
                             const SizedBox(height: 24),
 

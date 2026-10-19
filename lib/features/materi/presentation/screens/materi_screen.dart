@@ -212,7 +212,10 @@ class _MateriViewState extends State<_MateriView> {
                               const SizedBox(height: 20),
 
                               /// Hero Banner
-                              const MateriBannerCard(),
+                              MateriBannerCard(
+                                completedCount: state.completedMaterialsCount,
+                                totalCount: state.totalMaterialsCount,
+                              ),
 
                               const SizedBox(height: 24),
 

@@ -29,6 +29,9 @@ class QuizCategoryLoaded extends QuizCategoryState {
     this.isRefreshing = false,
   });
 
+  int get totalCategoriesCount => categories.length;
+  int get completedCategoriesCount => completedCategoryIds.length;
+
   List<QuizCategoryModel> get filteredCategories {
     if (searchQuery.trim().isEmpty) return categories;
     final query = searchQuery.toLowerCase();

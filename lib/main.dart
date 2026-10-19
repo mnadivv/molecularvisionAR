@@ -10,6 +10,7 @@ import 'features/home/presentation/screens/splash_screen.dart';
 
 import 'core/theme/app_theme.dart';
 
+import 'data/repositories/progress_repository.dart';
 import 'features/materi/data/repositories/materi_repository.dart';
 import 'features/molecule/data/repositories/molecule_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
@@ -37,6 +38,9 @@ Future<void> main() async {
   final quizRepository = QuizRepository(
     dioClient: dioClient,
   );
+  final progressRepository = ProgressRepository(
+    dioClient: dioClient,
+  );
 
   runApp(
     MultiRepositoryProvider(
@@ -48,6 +52,7 @@ Future<void> main() async {
         RepositoryProvider<MateriRepository>.value(value: materiRepository),
         RepositoryProvider<MoleculeRepository>.value(value: moleculeRepository),
         RepositoryProvider<QuizRepository>.value(value: quizRepository),
+        RepositoryProvider<ProgressRepository>.value(value: progressRepository),
       ],
       child: MultiBlocProvider(
         providers: [

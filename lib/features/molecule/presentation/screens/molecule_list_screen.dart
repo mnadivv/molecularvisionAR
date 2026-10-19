@@ -212,7 +212,10 @@ class _MoleculeListViewState extends State<_MoleculeListView> {
                               const SizedBox(height: 20),
 
                               /// 2. Card di bawah search (Banner Card Molekul)
-                              const MoleculeBannerCard(),
+                              MoleculeBannerCard(
+                                completedCount: state.completedMoleculesCount,
+                                totalCount: state.totalMoleculesCount,
+                              ),
 
                               const SizedBox(height: 24),
 

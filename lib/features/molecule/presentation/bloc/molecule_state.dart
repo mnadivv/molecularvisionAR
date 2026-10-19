@@ -24,6 +24,7 @@ class MoleculeLoaded extends MoleculeState {
   final bool isFiltering;
   final int? progressSuccessMoleculeId;
   final Set<int> completedMoleculeIds;
+  final int totalMoleculesCount;
 
   const MoleculeLoaded({
     required this.molecules,
@@ -33,7 +34,10 @@ class MoleculeLoaded extends MoleculeState {
     this.isFiltering = false,
     this.progressSuccessMoleculeId,
     this.completedMoleculeIds = const {},
-  });
+    int? totalMoleculesCount,
+  }) : totalMoleculesCount = totalMoleculesCount ?? molecules.length;
+
+  int get completedMoleculesCount => completedMoleculeIds.length;
 
   MoleculeLoaded copyWith({
     List<MoleculeModel>? molecules,
@@ -44,6 +48,7 @@ class MoleculeLoaded extends MoleculeState {
     bool? isFiltering,
     int? progressSuccessMoleculeId,
     Set<int>? completedMoleculeIds,
+    int? totalMoleculesCount,
   }) {
     return MoleculeLoaded(
       molecules: molecules ?? this.molecules,
@@ -55,6 +60,7 @@ class MoleculeLoaded extends MoleculeState {
       isFiltering: isFiltering ?? this.isFiltering,
       progressSuccessMoleculeId: progressSuccessMoleculeId,
       completedMoleculeIds: completedMoleculeIds ?? this.completedMoleculeIds,
+      totalMoleculesCount: totalMoleculesCount ?? this.totalMoleculesCount,
     );
   }
 
@@ -67,6 +73,7 @@ class MoleculeLoaded extends MoleculeState {
         isFiltering,
         progressSuccessMoleculeId,
         completedMoleculeIds,
+        totalMoleculesCount,
       ];
 }
 
