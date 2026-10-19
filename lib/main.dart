@@ -1,11 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'screens/splash_screen.dart';
+import 'core/network/dio_client.dart';
+import 'core/storage/token_storage_service.dart';
+import 'features/auth/data/repositories/auth_repository.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
+import 'features/home/presentation/screens/splash_screen.dart';
+
+import 'core/theme/app_theme.dart';
+
+import 'features/materi/data/repositories/materi_repository.dart';
+import 'features/profile/data/repositories/profile_repository.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const MVARApp());
+  final tokenStorage = TokenStorageService();
+  final dioClient = DioClient(tokenStorage: tokenStorage);
+  final authRepository = AuthRepository(
+    dioClient: dioClient,
+    tokenStorage: tokenStorage,
+  );
+  final profileRepository = ProfileRepository(
+    dioClient: dioClient,
+  );
+  final materiRepository = MateriRepository(
+    dioClient: dioClient,
+  );
+
+  runApp(
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<TokenStorageService>.value(value: tokenStorage),
+        RepositoryProvider<DioClient>.value(value: dioClient),
+        RepositoryProvider<AuthRepository>.value(value: authRepository),
+        RepositoryProvider<ProfileRepository>.value(value: profileRepository),
+        RepositoryProvider<MateriRepository>.value(value: materiRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>(
+            create: (context) => AuthBloc(
+              authRepository: context.read<AuthRepository>(),
+            )..add(const AuthCheckRequested()),
+          ),
+          BlocProvider<ProfileBloc>(
+            create: (context) => ProfileBloc(
+              repository: context.read<ProfileRepository>(),
+            ),
+          ),
+        ],
+        child: const MVARApp(),
+      ),
+    ),
+  );
 }
 
 class MVARApp extends StatelessWidget {
@@ -16,10 +66,7 @@ class MVARApp extends StatelessWidget {
     return MaterialApp(
       title: 'Molecular Vision AR',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Poppins',
-      ),
+      theme: AppTheme.darkTheme,
       home: const SplashScreen(),
     );
   }
