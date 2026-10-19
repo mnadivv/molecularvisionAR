@@ -13,6 +13,47 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        // Pastikan plugin krusial tetap terdaftar jika terjadi error pada plugin unity
+        try {
+            if (!flutterEngine.plugins.has(com.it_nomads.fluttersecurestorage.FlutterSecureStoragePlugin::class.java)) {
+                flutterEngine.plugins.add(com.it_nomads.fluttersecurestorage.FlutterSecureStoragePlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register FlutterSecureStoragePlugin failed", t)
+        }
+
+        try {
+            if (!flutterEngine.plugins.has(io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin::class.java)) {
+                flutterEngine.plugins.add(io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register FlutterAndroidLifecyclePlugin failed", t)
+        }
+
+        try {
+            if (!flutterEngine.plugins.has(io.flutter.plugins.pathprovider.PathProviderPlugin::class.java)) {
+                flutterEngine.plugins.add(io.flutter.plugins.pathprovider.PathProviderPlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register PathProviderPlugin failed", t)
+        }
+
+        try {
+            if (!flutterEngine.plugins.has(io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin::class.java)) {
+                flutterEngine.plugins.add(io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register SharedPreferencesPlugin failed", t)
+        }
+
+        try {
+            if (!flutterEngine.plugins.has(io.flutter.plugins.webviewflutter.WebViewFlutterPlugin::class.java)) {
+                flutterEngine.plugins.add(io.flutter.plugins.webviewflutter.WebViewFlutterPlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register WebViewFlutterPlugin failed", t)
+        }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "isAppInstalled" -> {

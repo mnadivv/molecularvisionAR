@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+
+/// Hero Banner Card untuk modul Kuis STEM & Latihan Soal
+class QuizBannerCard extends StatelessWidget {
+  final int? completedCount;
+  final int? totalCount;
+
+  const QuizBannerCard({
+    super.key,
+    this.completedCount,
+    this.totalCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF3C4B9E),
+            Color(0xFF1E2766),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
+                child: const Icon(
+                  Icons.quiz_rounded,
+                  color: AppColors.accent,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Text(
+                  'Kuis & Latihan STEM',
+                  style: TextStyle(
+                    color: AppColors.accent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Uji Pemahaman\nKimia Kamu',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Pilih materi dan jawab beragam tantangan soal interaktif',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 12.5,
+              height: 1.4,
+            ),
+          ),
+          if (completedCount != null && totalCount != null && totalCount! > 0) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF10B981),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$completedCount dari $totalCount Kuis Selesai Dikerjakan',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

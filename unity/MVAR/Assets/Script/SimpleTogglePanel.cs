@@ -101,10 +101,12 @@ public class SimpleTogglePanel : MonoBehaviour
         {
             foreach (GameObject tombol in tombolYangDihilangkan)
             {
-                if (tombol != null && tombol != gameObject) // Jangan matikan diri sendiri jika sedang diklik
+                if (tombol != null)
                     tombol.SetActive(false);
             }
         }
+
+        gameObject.SetActive(false);
 
         // 3. Tampilkan background shadow (kalau diisi)
         if (backgroundShadow != null)

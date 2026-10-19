@@ -79,4 +79,5 @@ app.*.map.json
 **/.vsconfig
 unity/**/.vscode/
 **/Assets/SamplesResources/
+**/[Aa]ssets/_Recovery/
 assets.zip
