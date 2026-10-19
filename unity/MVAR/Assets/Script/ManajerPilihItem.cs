@@ -139,6 +139,21 @@ public class ManajerPilihItem : MonoBehaviour
         if (ManajerTakaran.Instance != null) ManajerTakaran.Instance.ResetSemua();
     }
 
+    /// <summary>Reset tahap di luar percobaan yang tetap dipertahankan saat marker hilang.</summary>
+    public void ResetTahapDiLuar(Transform percobaanDipertahankan)
+    {
+        for (int i = 0; i < tahap.Count; i++)
+        {
+            TahapSoal t = tahap[i];
+            if (t == null) continue;
+            if (percobaanDipertahankan != null && t.panelSoal != null && t.panelSoal.transform.IsChildOf(percobaanDipertahankan)) continue;
+            t.selesai = false;
+            dipakai.Remove(i);
+        }
+        ManajerSlotTabung[] semua = FindObjectsByType<ManajerSlotTabung>(FindObjectsInactive.Include);
+        for (int i = 0; i < semua.Length; i++) if (semua[i] != null) semua[i].Bersihkan();
+    }
+
     /// <summary>Munculkan gambar salah, lalu sembunyikan otomatis setelah durasiSalah.</summary>
     public bool SedangBelumMulai()
     {

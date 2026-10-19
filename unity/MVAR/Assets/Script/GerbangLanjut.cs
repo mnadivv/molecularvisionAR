@@ -17,6 +17,7 @@ public class GerbangLanjut : MonoBehaviour
     {
         tombol = GetComponent<Button>();
         panelSoal = transform.parent != null ? transform.parent.gameObject : null;
+        if (panelSoal != null && panelSoal.name == "Soal6") tombol.interactable = false;
     }
 
     private void OnEnable()
@@ -33,6 +34,8 @@ public class GerbangLanjut : MonoBehaviour
     {
         if (tombol == null || panelSoal == null) return;
         bool selesai = ManajerPilihItem.Instance == null || ManajerPilihItem.Instance.TahapSelesai(panelSoal);
+        if (panelSoal.name == "Soal6" && ManajerTakaran.Instance != null)
+            selesai = selesai && ManajerTakaran.Instance.AnimasiSoal6Selesai;
         if (tombol.interactable != selesai)
             tombol.interactable = selesai;
     }

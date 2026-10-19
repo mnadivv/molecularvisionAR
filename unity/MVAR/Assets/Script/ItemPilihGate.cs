@@ -45,12 +45,17 @@ public class ItemPilihGate : MonoBehaviour, IPointerDownHandler, IPointerUpHandl
     public void OnPointerDown(PointerEventData e)
     {
         ManajerPilihItem m = ManajerPilihItem.Instance;
-        bool boleh = m != null && m.BolehDipakai(gameObject);
+        ManajerSpotPlate p2 = ManajerSpotPlate.Instance;
+        bool plateUntukP2 = p2 != null && p2.BolehAmbilKartuPlateTetes(gameObject);
+        bool boleh = plateUntukP2 || (p2 != null && p2.AturanKartuSoal2Aktif
+            ? p2.BolehAmbilKartuSoal2(gameObject)
+            : m != null && m.BolehDipakai(gameObject));
 
         memantauSalah = m != null && !boleh;
         sudahLaporSalah = false;
 
-        memantauBenar = boleh;
+        // Penempatan plate P2 disahkan oleh DropPlate, jangan tandai melalui kuis P1.
+        memantauBenar = boleh && !plateUntukP2;
         sudahLaporBenar = false;
 
         waktuMulai = Time.unscaledTime;

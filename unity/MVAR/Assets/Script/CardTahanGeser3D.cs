@@ -153,17 +153,11 @@ public class CardTahanGeser3D : MonoBehaviour,
     public void OnPointerUp(PointerEventData e)
     {
         if (e.pointerId != idPointer) return;
-        bool ketukPilihAsam = pointerDitekan && !modelAktif && !modeScroll &&
-                              namaBahanSP == "AsamBenzoat" && penerimaSP != null;
         pointerDitekan = false;
         if (modelAktif)
         {
             posisiLayarModel = e.position;
             Selesai(true);
-        }
-        else if (ketukPilihAsam)
-        {
-            penerimaSP.PilihBahanAsamBenzoat();
         }
     }
 
@@ -218,6 +212,12 @@ public class CardTahanGeser3D : MonoBehaviour,
         // lewat ManajerPilihItem saat P1 aktif — biarkan ItemPilihGate yang menangani.
         bool p2Aktif = ManajerSpotPlate.Instance != null &&
                        ManajerSpotPlate.Instance.FaseAktif != ManajerSpotPlate.FaseP2.Idle;
+        if (ManajerSpotPlate.Instance != null && ManajerSpotPlate.Instance.AturanKartuSoal2Aktif &&
+            !ManajerSpotPlate.Instance.BolehAmbilKartuSoal2(gameObject))
+        {
+            if (ManajerPilihItem.Instance != null) ManajerPilihItem.Instance.TampilkanSalah();
+            diblokir = true; pointerDitekan = false; return;
+        }
         bool cardKhususP2 = penerimaSP != null;
         bool cardBersamaP2 = !string.IsNullOrEmpty(namaBahanSP) && penerimaSP == null;
         // Blokir hanya kalau: (a) bukan card P2 sama sekali, DAN ManajerPilihItem blokir,
@@ -287,14 +287,23 @@ public class CardTahanGeser3D : MonoBehaviour,
         float tinggiCard = Mathf.Abs(Vector3.Dot(diag, cam.transform.up));
 
         // 2. Buat model di bawah wadah khusus, tegak lurus terhadap kamera
+        ManajerSpotPlate manajerSpatula = penerimaSP != null ? penerimaSP : (namaBahanSP == "Spatula" ? ManajerSpotPlate.Instance : null);
         GameObject modelDrag = objek3D;
-        // Pada Soal 2 P2, memilih bahan asam benzoat mengambil spatula berisi serbuk.
-        if (namaBahanSP == "AsamBenzoat" && penerimaSP != null &&
-            penerimaSP.objekSpatulaAsam != null)
-            modelDrag = penerimaSP.objekSpatulaAsam;
-        instans = namaBahanSP == "AsamBenzoat" && penerimaSP != null
-            ? penerimaSP.AmbilSpatulaAsamUntukDrag()
-            : null;
+        bool kartuSpatulaAsam = namaBahanSP == "Spatula";
+        if (kartuSpatulaAsam)
+        {
+            // Kartu spatula selalu memakai prefab spatula manager, bukan fallback ke objek3D kartu.
+            if (manajerSpatula == null || !manajerSpatula.BolehAmbilSpatulaAsam())
+            { diblokir = true; pointerDitekan = false; return; }
+            modelDrag = manajerSpatula.objekSpatulaAsam;
+        }
+        if (modelDrag == null) { Debug.LogWarning("CardTahanGeser3D: model drag belum diisi untuk " + namaBahanSP); pointerDitekan = false; return; }
+        bool spatulaDariSamping = false;
+        if (kartuSpatulaAsam)
+        {
+            instans = manajerSpatula.AmbilSpatulaAsamUntukDrag();
+            spatulaDariSamping = instans != null;
+        }
         if (instans == null) instans = Instantiate(modelDrag);
         if (modelDrag.name.ToLowerInvariant().Contains("pipet") || modelDrag.name.ToLowerInvariant().Contains("pipeline") || modelDrag.name.ToLowerInvariant().Contains("aqua") || modelDrag.name.ToLowerInvariant().Contains("akuades"))
         {
@@ -303,37 +312,53 @@ public class CardTahanGeser3D : MonoBehaviour,
         }
         instans.name = modelDrag.name + "_drag";
         instans.transform.SetParent(AmbilWadah(), true);
-        instans.transform.rotation = cam.transform.rotation * Quaternion.Euler(rotasiTambahan) * modelDrag.transform.rotation;
-        instans.transform.position = cam.transform.position + cam.transform.forward * kedalaman;
+        if (!spatulaDariSamping)
+        {
+            instans.transform.rotation = cam.transform.rotation * Quaternion.Euler(rotasiTambahan) * modelDrag.transform.rotation;
+            if (namaBahanSP == "Spatula") instans.transform.rotation *= Quaternion.Euler(0f, 0f, 90f);
+            instans.transform.position = cam.transform.position + cam.transform.forward * kedalaman;
+        }
         instans.SetActive(true);
-        if (namaBahanSP == "AsamBenzoat" && penerimaSP != null)
-            penerimaSP.TambahkanSerbukKeSpatula(instans);
+        
         InfoModel3D infoModel = instans.AddComponent<InfoModel3D>();
         infoModel.skalaAsset = instans.transform.localScale;
 
         // 3. Skala supaya pas dengan ukuran card
-        Vector3 pusatKam;
-        Vector2 ukuran;
-        if (UkurDiRuangKamera(instans, cam.transform, out pusatKam, out ukuran) && ukuran.x > 0.0001f && ukuran.y > 0.0001f)
+        Vector3 pusatKam = Vector3.zero;
+        Vector2 ukuran = Vector2.zero;
+        if (!spatulaDariSamping && UkurDiRuangKamera(instans, cam.transform, out pusatKam, out ukuran) && ukuran.x > 0.0001f && ukuran.y > 0.0001f)
         {
             float faktor = Mathf.Min(lebarCard / ukuran.x, tinggiCard / ukuran.y) * pengaliUkuran;
             instans.transform.localScale *= faktor;
             UkurDiRuangKamera(instans, cam.transform, out pusatKam, out ukuran);
         }
-        else
+        else if (!spatulaDariSamping)
         {
             Debug.LogWarning("CardTahanGeser3D: model tidak punya Renderer, ukuran tidak bisa disesuaikan.");
         }
 
         infoModel.Perbarui();
 
-        // 4. Taruh pusat model tepat di pusat card
-        Vector3 targetDunia = cam.ScreenToWorldPoint(new Vector3(pusatLayar.x, pusatLayar.y, kedalaman));
-        Vector3 pusatDunia = cam.transform.TransformPoint(pusatKam);
-        instans.transform.position += targetDunia - pusatDunia;
-        offsetPusatLokal = cam.transform.InverseTransformVector(instans.transform.position - targetDunia);
-        offsetLayar = pusatLayar - posisiTerakhir;
-        posisiLayarModel = posisiTerakhir;
+        // 4. Model biasa muncul di card. Spatula asam tetap di posisi samping,
+        // lalu mengikuti jari dari sana menuju tanda drop.
+        Vector3 targetDunia;
+        if (spatulaDariSamping)
+        {
+            Vector3 posisiLayarSpatula = cam.WorldToScreenPoint(instans.transform.position);
+            targetDunia = cam.ScreenToWorldPoint(new Vector3(posisiLayarSpatula.x, posisiLayarSpatula.y, kedalaman));
+            offsetPusatLokal = cam.transform.InverseTransformVector(instans.transform.position - targetDunia);
+            offsetLayar = new Vector2(posisiLayarSpatula.x, posisiLayarSpatula.y) - posisiTerakhir;
+            posisiLayarModel = new Vector2(posisiLayarSpatula.x, posisiLayarSpatula.y);
+        }
+        else
+        {
+            targetDunia = cam.ScreenToWorldPoint(new Vector3(pusatLayar.x, pusatLayar.y, kedalaman));
+            Vector3 pusatDunia = cam.transform.TransformPoint(pusatKam);
+            instans.transform.position += targetDunia - pusatDunia;
+            offsetPusatLokal = cam.transform.InverseTransformVector(instans.transform.position - targetDunia);
+            offsetLayar = pusatLayar - posisiTerakhir;
+            posisiLayarModel = posisiTerakhir;
+        }
 
         // 5. Sembunyikan ScrollAlat (tetap aktif supaya event lepas klik tetap diterima)
         if (panelScrollAlat != null)
@@ -377,7 +402,7 @@ public class CardTahanGeser3D : MonoBehaviour,
 
             if (!ditaruh)
             {
-                if (cobaTaruh && periksaKesesuaian && SedangDiSoal())
+                if (cobaTaruh && periksaKesesuaian && namaBahanSP != "PlateTetes" && SedangDiSoal())
                 {
                     if (ManajerPilihItem.Instance != null)
                         ManajerPilihItem.Instance.TampilkanSalah();
@@ -397,8 +422,10 @@ public class CardTahanGeser3D : MonoBehaviour,
     {
         if (namaBahanSP == "PlateTetes")
             return target.DropPlate(posisiLayarModel, instans, cam);
+        if (namaBahanSP == "AsamBenzoat") return target.DropSumberAsam(posisiLayarModel,cam,instans);
         if (namaBahanSP == "TesKonduktor")
             return target.DropTespen(posisiLayarModel, cam);
+        if (namaBahanSP == "Spatula") return target.DropBahan("Spatula",posisiLayarModel,cam,instans);
         return !string.IsNullOrEmpty(namaBahanSP) &&
                target.DropBahan(namaBahanSP, posisiLayarModel, cam, instans);
     }

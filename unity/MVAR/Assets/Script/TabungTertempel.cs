@@ -1,9 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// Otomatis dipasang ke tabung yang sudah ditaruh di slot.
-/// Menjaga tabung tetap di titik slot walau kamera AR bergerak.
-/// </summary>
+/// <summary>Menjaga alat tetap pada titik layar yang ditetapkan saat marker terlacak.</summary>
 public class TabungTertempel : MonoBehaviour
 {
     private SlotTabung slot;
@@ -14,11 +11,7 @@ public class TabungTertempel : MonoBehaviour
 
     public void Pasang(SlotTabung s, Camera c, float z, Vector3 offset, Quaternion rotRel)
     {
-        slot = s;
-        cam = c;
-        kedalaman = z;
-        offsetPusatLokal = offset;
-        rotasiRelatif = rotRel;
+        slot = s; cam = c; kedalaman = z; offsetPusatLokal = offset; rotasiRelatif = rotRel;
     }
 
     private void LateUpdate()
