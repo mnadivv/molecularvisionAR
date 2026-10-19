@@ -486,12 +486,17 @@ class _MateriDetailViewState extends State<_MateriDetailView> {
                   elevation: 4,
                 ),
                 onPressed: () {
+                  final catId = _detailedMaterial?.idCategory ??
+                      widget.material?.idCategory ??
+                      1;
+                  final catName =
+                      _detailedMaterial?.category?.name ?? title;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => QuizScreen(
-                        materialId: title,
-                        materialName: title,
+                        idCategory: catId,
+                        categoryName: catName,
                       ),
                     ),
                   );

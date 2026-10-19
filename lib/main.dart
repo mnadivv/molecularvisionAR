@@ -14,6 +14,7 @@ import 'features/materi/data/repositories/materi_repository.dart';
 import 'features/molecule/data/repositories/molecule_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/quiz/data/repositories/quiz_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,9 @@ Future<void> main() async {
   final moleculeRepository = MoleculeRepository(
     dioClient: dioClient,
   );
+  final quizRepository = QuizRepository(
+    dioClient: dioClient,
+  );
 
   runApp(
     MultiRepositoryProvider(
@@ -43,6 +47,7 @@ Future<void> main() async {
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),
         RepositoryProvider<MateriRepository>.value(value: materiRepository),
         RepositoryProvider<MoleculeRepository>.value(value: moleculeRepository),
+        RepositoryProvider<QuizRepository>.value(value: quizRepository),
       ],
       child: MultiBlocProvider(
         providers: [
