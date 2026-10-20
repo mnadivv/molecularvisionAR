@@ -46,6 +46,14 @@ class MainActivity : FlutterActivity() {
             android.util.Log.e("MainActivity", "Fallback register SharedPreferencesPlugin failed", t)
         }
 
+        try {
+            if (!flutterEngine.plugins.has(io.flutter.plugins.webviewflutter.WebViewFlutterPlugin::class.java)) {
+                flutterEngine.plugins.add(io.flutter.plugins.webviewflutter.WebViewFlutterPlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register WebViewFlutterPlugin failed", t)
+        }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "isAppInstalled" -> {

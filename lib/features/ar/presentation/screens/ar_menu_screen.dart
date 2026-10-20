@@ -14,47 +14,39 @@ class ARMenuScreen extends StatefulWidget {
 }
 
 class _ARMenuScreenState extends State<ARMenuScreen> {
+  final TextEditingController searchController = TextEditingController();
 
-  final TextEditingController searchController =
-      TextEditingController();
-
-  List<ChemistryTopic> filteredTopics =
-      List.from(chemistryTopics);
+  List<ChemistryTopic> filteredTopics = List.from(chemistryTopics);
 
   @override
   void initState() {
     super.initState();
-
     searchController.addListener(searchTopic);
   }
 
   void searchTopic() {
-
-    final keyword =
-        searchController.text.toLowerCase();
+    final keyword = searchController.text.toLowerCase();
 
     setState(() {
-
       filteredTopics = chemistryTopics.where((topic) {
-
-        return topic.title
-                .toLowerCase()
-                .contains(keyword) ||
-
+        return topic.title.toLowerCase().contains(keyword) ||
             (topic.practicumTitle != null &&
-                topic.practicumTitle!
-                    .toLowerCase()
-                    .contains(keyword)) ||
-
-            topic.subtitle
-                .toLowerCase()
-                .contains(keyword);
-
+                topic.practicumTitle!.toLowerCase().contains(keyword)) ||
+            topic.subtitle.toLowerCase().contains(keyword);
       }).toList();
-
     });
-
   }
+
+  void _handleTopicTap(ChemistryTopic topic) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ARUnityScreen(topic: topic),
+      ),
+    );
+  }
+
+
 
   @override
   void dispose() {
@@ -64,146 +56,69 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
-
         title: const Text(
           "Augmented Reality",
         ),
-
         backgroundColor: Colors.transparent,
-
         elevation: 0,
-
-        iconTheme:
-            const IconThemeData(color: Colors.white),
-
+        iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
-
       ),
-
       body: Padding(
-
         padding: const EdgeInsets.all(20),
-
         child: Column(
-
           children: [
             TextField(
-
               controller: searchController,
-
               style: const TextStyle(
                 color: Colors.white,
               ),
-
               decoration: InputDecoration(
-
-                hintText:
-                    "Cari materi Augmented Reality",
-
+                hintText: "Cari materi Augmented Reality",
                 hintStyle: TextStyle(
-
-                  color:
-                      Colors.white.withValues(alpha: .5),
-
+                  color: Colors.white.withValues(alpha: .5),
                 ),
-
                 prefixIcon: const Icon(
-
                   Icons.search,
-
                   color: Colors.white,
-
                 ),
-
                 filled: true,
-
-                fillColor:
-                    Colors.white.withValues(alpha: .08),
-
+                fillColor: Colors.white.withValues(alpha: .08),
                 border: OutlineInputBorder(
-
-                  borderRadius:
-                      BorderRadius.circular(18),
-
+                  borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
-
                 ),
-
               ),
-
             ),
-
             const SizedBox(height: 25),
-
             Expanded(
-
               child: ListView.builder(
-
                 itemCount: filteredTopics.length,
-
-                itemBuilder: (context,index){
-
-                  final topic =
-                      filteredTopics[index];
+                itemBuilder: (context, index) {
+                  final topic = filteredTopics[index];
                   final displayTitle =
                       topic.practicumTitle ?? topic.title;
 
                   return MenuCard(
-
                     icon: topic.icon,
-
                     title: displayTitle,
-
-                    subtitle:
-                        "Buka visualisasi 3D AR ${topic.title}",
-
+                    subtitle: "Buka visualisasi 3D AR ${topic.title}",
                     iconColor: topic.color,
-
-                    onTap: () {
-
-                      Navigator.push(
-
-                        context,
-
-                        MaterialPageRoute(
-
-                          builder: (_) =>
-                              ARUnityScreen(
-                            topic: topic,
-                          ),
-
-                        ),
-
-                      );
-
-                    },
-
+                    onTap: () => _handleTopicTap(topic),
                   );
-
                 },
-
               ),
-
             ),
-
           ],
-
         ),
-
       ),
-
     );
-
   }
-
-}
+}

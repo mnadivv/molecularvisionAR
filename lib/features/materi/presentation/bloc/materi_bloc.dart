@@ -17,6 +17,7 @@ class MateriBloc extends Bloc<MateriEvent, MateriState> {
     on<MateriCategorySelected>(_onCategorySelected);
     on<MateriSearchSubmitted>(_onSearchSubmitted);
     on<MateriRefreshRequested>(_onRefreshRequested);
+    on<MateriProgressSubmitted>(_onProgressSubmitted);
   }
 
   Future<void> _onFetchRequested(
@@ -31,16 +32,19 @@ class MateriBloc extends Bloc<MateriEvent, MateriState> {
           idCategory: event.idCategory,
           search: event.search,
         ),
+        _repository.getCompletedMaterialIds(),
       ]);
 
       final categories = results[0] as List<CategoryModel>;
       final materials = results[1] as List<MaterialModel>;
+      final completedIds = results[2] as Set<int>;
 
       emit(MateriLoaded(
         categories: categories,
         materials: materials,
         selectedCategoryId: event.idCategory,
         searchQuery: event.search ?? '',
+        completedMaterialIds: completedIds,
       ));
     } on AppException catch (e) {
       emit(MateriFailure(e.message));
@@ -134,22 +138,44 @@ class MateriBloc extends Bloc<MateriEvent, MateriState> {
           idCategory: selectedId,
           search: query,
         ),
+        _repository.getCompletedMaterialIds(),
       ]);
 
       final categories = results[0] as List<CategoryModel>;
       final materials = results[1] as List<MaterialModel>;
+      final completedIds = results[2] as Set<int>;
 
       emit(MateriLoaded(
         categories: categories,
         materials: materials,
         selectedCategoryId: selectedId,
         searchQuery: query ?? '',
+        completedMaterialIds: completedIds,
         isFiltering: false,
       ));
     } on AppException catch (e) {
       emit(MateriFailure(e.message));
     } catch (e) {
       emit(MateriFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onProgressSubmitted(
+    MateriProgressSubmitted event,
+    Emitter<MateriState> emit,
+  ) async {
+    try {
+      await _repository.saveMaterialProgress(event.idMaterial);
+      if (state is MateriLoaded) {
+        final currentSet = (state as MateriLoaded).completedMaterialIds;
+        final updatedSet = Set<int>.from(currentSet)..add(event.idMaterial);
+        emit((state as MateriLoaded).copyWith(
+          progressSuccessMaterialId: event.idMaterial,
+          completedMaterialIds: updatedSet,
+        ));
+      }
+    } catch (_) {
+      // Progres belajar tetap dicatat tanpa memblokir tampilan
     }
   }
 }

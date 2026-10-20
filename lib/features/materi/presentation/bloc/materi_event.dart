@@ -42,3 +42,13 @@ class MateriSearchSubmitted extends MateriEvent {
 class MateriRefreshRequested extends MateriEvent {
   const MateriRefreshRequested();
 }
+
+/// Menyimpan status selesai membaca materi pembelajaran ke backend
+class MateriProgressSubmitted extends MateriEvent {
+  final int idMaterial;
+
+  const MateriProgressSubmitted(this.idMaterial);
+
+  @override
+  List<Object?> get props => [idMaterial];
+}

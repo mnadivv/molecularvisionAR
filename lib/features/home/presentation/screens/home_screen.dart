@@ -8,19 +8,38 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../materi/presentation/screens/materi_screen.dart';
-import '../../../molecule/presentation/screens/molecule_screen.dart';
+import '../../../molecule/presentation/screens/molecule_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../quiz/presentation/screens/quiz_material_screen.dart';
+import '../../../../data/repositories/progress_repository.dart';
+import '../bloc/progress/progress_bloc.dart';
+import '../bloc/progress/progress_event.dart';
+import '../bloc/progress/progress_state.dart';
+import '../widgets/home_progress_card.dart';
 import '../widgets/menu_card.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (ctx) => ProgressBloc(
+        repository: ctx.read<ProgressRepository>(),
+      )..add(const ProgressFetchRequested()),
+      child: const _HomeView(),
+    );
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeView extends StatefulWidget {
+  const _HomeView();
+
+  @override
+  State<_HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<_HomeView> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<Offset> _slide;
@@ -70,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _handleRefresh() async {
     final authBloc = context.read<AuthBloc>();
     authBloc.add(const AuthCheckRequested());
+    context.read<ProgressBloc>().add(const ProgressRefreshRequested());
 
     setState(() {
       _factIndex = (_factIndex + 1) % chemistryFacts.length;
@@ -554,36 +574,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                         ),
 
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 18),
 
+                        /// Progres Belajar Kamu (Materi, Molekul, Latihan Soal)
+                        BlocBuilder<ProgressBloc, ProgressState>(
+                          builder: (context, state) {
+                            final progress =
+                                state is ProgressLoaded ? state.progress : null;
+                            final isLoading = state is ProgressLoading;
+                            return HomeProgressCard(
+                              progress: progress,
+                              isLoading: isLoading,
+                              onRetry: () => context
+                                  .read<ProgressBloc>()
+                                  .add(const ProgressFetchRequested()),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        MenuCard(
+                          icon: Icons.menu_book_rounded,
+                          title: "Materi Pembelajaran",
+                          subtitle:
+                              "Pelajari materi kimia secara interaktif.",
+                          iconColor: Colors.orange,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MateriScreen(),
+                              ),
+                            );
+                            if (context.mounted) {
+                              context
+                                  .read<ProgressBloc>()
+                                  .add(const ProgressRefreshRequested());
+                            }
+                          },
+                        ),
                         MenuCard(
                           icon: Icons.science_rounded,
                           title: "Daftar Molekul",
                           subtitle:
                               "Pelajari struktur, bentuk, dan sifat molekul.",
                           iconColor: Colors.deepPurpleAccent,
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const MoleculeScreen(),
+                                builder: (_) => const MoleculeListScreen(),
                               ),
                             );
-                          },
-                        ),
-                        MenuCard(
-                          icon: Icons.menu_book_rounded,
-                          title: "Materi Pembelajaran",
-                          subtitle:
-                              "Pelajari 12 materi kimia secara interaktif.",
-                          iconColor: Colors.orange,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MateriScreen(),
-                              ),
-                            );
+                            if (context.mounted) {
+                              context
+                                  .read<ProgressBloc>()
+                                  .add(const ProgressRefreshRequested());
+                            }
                           },
                         ),
 
@@ -596,13 +644,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           subtitle:
                               "Uji pemahamanmu dengan soal-soal interaktif.",
                           iconColor: Colors.green,
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const QuizMaterialScreen(),
                               ),
                             );
+                            if (context.mounted) {
+                              context
+                                  .read<ProgressBloc>()
+                                  .add(const ProgressRefreshRequested());
+                            }
                           },
                         ),
                         MenuCard(

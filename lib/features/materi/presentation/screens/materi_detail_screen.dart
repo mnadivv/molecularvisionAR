@@ -6,12 +6,16 @@ import '../../../../core/models/chemistry_topic.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../data/models/material/material_model.dart';
 import '../../../ar/presentation/screens/ar_menu_screen.dart';
-import '../../../molecule/presentation/screens/molecule_screen.dart';
+import '../../../molecule/presentation/screens/molecule_list_screen.dart';
 import '../../../quiz/presentation/screens/quiz_screen.dart';
 import '../../data/repositories/materi_repository.dart';
+import '../bloc/materi_bloc.dart';
+import '../bloc/materi_event.dart';
+import '../bloc/materi_state.dart';
+import '../widgets/materi_youtube_player.dart';
 
 /// Halaman Detail Konten Teori Pembelajaran Kimia
-class MateriDetailScreen extends StatefulWidget {
+class MateriDetailScreen extends StatelessWidget {
   final MaterialModel? material;
   final ChemistryTopic? topic;
 
@@ -25,12 +29,43 @@ class MateriDetailScreen extends StatefulWidget {
         );
 
   @override
-  State<MateriDetailScreen> createState() => _MateriDetailScreenState();
+  Widget build(BuildContext context) {
+    final view = _MateriDetailView(
+      material: material,
+      topic: topic,
+    );
+
+    try {
+      context.read<MateriBloc>();
+      return view;
+    } catch (_) {
+      return BlocProvider(
+        create: (context) => MateriBloc(
+          repository: context.read<MateriRepository>(),
+        )..add(const MateriFetchRequested()),
+        child: view,
+      );
+    }
+  }
 }
 
-class _MateriDetailScreenState extends State<MateriDetailScreen> {
+class _MateriDetailView extends StatefulWidget {
+  final MaterialModel? material;
+  final ChemistryTopic? topic;
+
+  const _MateriDetailView({
+    this.material,
+    this.topic,
+  });
+
+  @override
+  State<_MateriDetailView> createState() => _MateriDetailViewState();
+}
+
+class _MateriDetailViewState extends State<_MateriDetailView> {
   MaterialModel? _detailedMaterial;
   bool _isLoadingContent = false;
+  bool _isMarkedCompleted = false;
 
   @override
   void initState() {
@@ -68,6 +103,37 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
         });
       }
     }
+  }
+
+  void _onMarkCompleted(int idMaterial, String title) {
+    context.read<MateriBloc>().add(MateriProgressSubmitted(idMaterial));
+    setState(() {
+      _isMarkedCompleted = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Progres materi $title berhasil disimpan!',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   String _getTopicDescription(String title) {
@@ -108,8 +174,19 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
     final description = _detailedMaterial?.description ??
         (widget.topic != null ? _getTopicDescription(widget.topic!.title) : '');
     final content = _detailedMaterial?.content;
+    final materialId = _detailedMaterial?.idMaterial ?? widget.material?.idMaterial;
 
-    return Scaffold(
+    return BlocListener<MateriBloc, MateriState>(
+      listener: (context, state) {
+        if (state is MateriLoaded &&
+            materialId != null &&
+            state.progressSuccessMaterialId == materialId) {
+          setState(() {
+            _isMarkedCompleted = true;
+          });
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -256,6 +333,83 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                     : _buildRichContent(content, description),
               ),
 
+              const SizedBox(height: 20),
+
+              // Tombol Tandai Telah Selesai
+              BlocBuilder<MateriBloc, MateriState>(
+                builder: (context, state) {
+                  final isCompletedFromState = (state is MateriLoaded) &&
+                      materialId != null &&
+                      state.completedMaterialIds.contains(materialId);
+                  final isFinished = _isMarkedCompleted || isCompletedFromState;
+
+                  if (isFinished) {
+                    return Container(
+                      width: double.infinity,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.45),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFF10B981),
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'SUDAH DIPELAJARI',
+                            style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 2,
+                      ),
+                      onPressed: materialId != null
+                          ? () => _onMarkCompleted(materialId, title)
+                          : null,
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 20,
+                      ),
+                      label: const Text(
+                        'TANDAI SELESAI DIPELAJARI',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
               const SizedBox(height: 30),
 
               // Menu Pembelajaran & Interaksi Cepat
@@ -287,7 +441,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const MoleculeScreen(),
+                      builder: (_) => const MoleculeListScreen(),
                     ),
                   );
                 },
@@ -332,12 +486,17 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                   elevation: 4,
                 ),
                 onPressed: () {
+                  final catId = _detailedMaterial?.idCategory ??
+                      widget.material?.idCategory ??
+                      1;
+                  final catName =
+                      _detailedMaterial?.category?.name ?? title;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => QuizScreen(
-                        materialId: title,
-                        materialName: title,
+                        idCategory: catId,
+                        categoryName: catName,
                       ),
                     ),
                   );
@@ -349,7 +508,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   /// Merender konten HTML/Rich Text yang dihasilkan oleh editor website (TipTap)
@@ -377,6 +537,34 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
         fontSize: 14.5,
         height: 1.6,
       ),
+      customWidgetBuilder: (element) {
+        // 1. Tag iframe: YouTube video embed
+        if (element.localName == 'iframe') {
+          final src = element.attributes['src'] ?? '';
+          final videoId = extractYoutubeVideoId(src);
+          if (videoId != null) {
+            return MateriYoutubePlayer(
+              videoId: videoId,
+              originalUrl: src,
+            );
+          }
+        }
+
+        // 2. Div dengan attribute data-youtube-video (output TipTap @tiptap/extension-youtube)
+        if (element.attributes.containsKey('data-youtube-video')) {
+          final iframe = element.getElementsByTagName('iframe').firstOrNull;
+          final src = iframe?.attributes['src'] ?? '';
+          final videoId = extractYoutubeVideoId(src);
+          if (videoId != null) {
+            return MateriYoutubePlayer(
+              videoId: videoId,
+              originalUrl: src,
+            );
+          }
+        }
+
+        return null;
+      },
       customStylesBuilder: (element) {
         if (element.localName == 'h1') {
           return {

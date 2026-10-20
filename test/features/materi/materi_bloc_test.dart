@@ -78,6 +78,27 @@ class MockMateriRepository extends MateriRepository {
     }
     return mockMaterials.firstWhere((m) => m.idMaterial == id);
   }
+
+  Set<int> mockCompletedMaterialIds = {1};
+  int? lastRecordedMaterialId;
+
+  @override
+  Future<Set<int>> getCompletedMaterialIds() async {
+    if (shouldFail) {
+      throw ServerException('Gagal memuat status progress.');
+    }
+    return mockCompletedMaterialIds;
+  }
+
+  @override
+  Future<bool> saveMaterialProgress(
+    int idMaterial, {
+    bool isCompleted = true,
+  }) async {
+    lastRecordedMaterialId = idMaterial;
+    mockCompletedMaterialIds.add(idMaterial);
+    return true;
+  }
 }
 
 void main() {
@@ -185,6 +206,34 @@ void main() {
       );
 
       bloc.add(const MateriRefreshRequested());
+    });
+
+    test('records progress and updates completedMaterialIds when MateriProgressSubmitted is dispatched', () async {
+      bloc.add(const MateriFetchRequested());
+      await bloc.stream.firstWhere((s) => s is MateriLoaded);
+
+      expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<MateriLoaded>()
+              .having(
+                (s) => s.progressSuccessMaterialId,
+                'progressSuccessMaterialId',
+                2,
+              )
+              .having(
+                (s) => s.completedMaterialIds.contains(2),
+                'completedMaterialIds contains 2',
+                true,
+              ),
+        ]),
+      );
+
+      bloc.add(const MateriProgressSubmitted(2));
+
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(repository.lastRecordedMaterialId, equals(2));
+      expect(repository.mockCompletedMaterialIds, contains(2));
     });
   });
 }

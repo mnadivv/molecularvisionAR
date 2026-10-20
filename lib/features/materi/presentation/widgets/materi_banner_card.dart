@@ -3,7 +3,14 @@ import '../../../../core/theme/app_colors.dart';
 
 /// Hero Banner Card bergaya Figma untuk fitur materi pembelajaran
 class MateriBannerCard extends StatelessWidget {
-  const MateriBannerCard({super.key});
+  final int? completedCount;
+  final int? totalCount;
+
+  const MateriBannerCard({
+    super.key,
+    this.completedCount,
+    this.totalCount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +97,40 @@ class MateriBannerCard extends StatelessWidget {
               height: 1.4,
             ),
           ),
+          if (completedCount != null && totalCount != null && totalCount! > 0) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF10B981),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$completedCount dari $totalCount Materi Selesai Dipelajari',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

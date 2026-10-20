@@ -7,12 +7,14 @@ class MateriListCard extends StatelessWidget {
   final MaterialModel material;
   final int index;
   final VoidCallback onTap;
+  final bool isCompleted;
 
   const MateriListCard({
     super.key,
     required this.material,
     required this.index,
     required this.onTap,
+    this.isCompleted = false,
   });
 
   @override
@@ -82,17 +84,28 @@ class MateriListCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: isCompleted
+                        ? const Color(0xFF10B981).withValues(alpha: 0.20)
+                        : Colors.white.withValues(alpha: 0.08),
+                    border: isCompleted
+                        ? Border.all(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                            width: 1,
+                          )
+                        : null,
                   ),
-                  child: const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Colors.white70,
-                    size: 22,
+                  child: Icon(
+                    isCompleted
+                        ? Icons.check_circle_rounded
+                        : Icons.chevron_right_rounded,
+                    color: isCompleted
+                        ? const Color(0xFF10B981)
+                        : Colors.white70,
+                    size: 20,
                   ),
                 ),
               ],
