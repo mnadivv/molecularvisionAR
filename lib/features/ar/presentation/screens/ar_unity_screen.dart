@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_embed_unity/flutter_embed_unity.dart';
 
 import '../../../../core/models/chemistry_topic.dart';
@@ -32,6 +33,15 @@ class _ARUnityScreenState extends State<ARUnityScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    // Kembalikan orientasi layar ke portrait saat keluar dari Unity AR
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    super.dispose();
+  }
+
   void _sendTopicToUnity() {
     try {
       // Kirim topic_id / scene ke GameObject 'ARManager' / 'UnityAndroidReceiver'
@@ -63,6 +73,10 @@ class _ARUnityScreenState extends State<ARUnityScreen> {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
+          // Paksa orientasi kembali ke portrait
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+          ]);
           // Lifecycle cleanup jika diperlukan saat keluar dari AR
           try {
             sendToUnity('ARManager', 'OnPauseAR', '');
