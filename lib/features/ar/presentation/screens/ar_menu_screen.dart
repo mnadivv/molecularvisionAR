@@ -5,7 +5,8 @@ import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/camera_permission_dialog.dart';
 import '../../../home/presentation/widgets/menu_card.dart';
-
+import '../widgets/ar_module_banner_card.dart';
+import '../../../../core/constants/app_links.dart';
 import 'ar_unity_screen.dart';
 
 class ARMenuScreen extends StatefulWidget {
@@ -88,22 +89,62 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
-              controller: searchController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: "Cari materi Augmented Reality",
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: .5)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: .08),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
+            Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                textInputAction: TextInputAction.search,
+                style: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: "Cari materi Augmented Reality...",
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 14,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: Colors.grey.shade600,
+                    size: 20,
+                  ),
+                  suffixIcon: searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          color: Colors.grey.shade600,
+                          onPressed: () {
+                            searchController.clear();
+                          },
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                 ),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 18),
+            const ARModuleBannerCard(
+              driveUrl: AppLinks.practicumModuleDriveUrl,
+            ),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: filteredTopics.length,
