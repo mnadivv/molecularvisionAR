@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 import '../../../../core/models/chemistry_topic.dart';
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/camera_permission_dialog.dart';
 import '../../../../data/models/material/material_model.dart';
 import '../../../ar/presentation/screens/ar_menu_screen.dart';
 import '../../../molecule/presentation/screens/molecule_list_screen.dart';
@@ -461,13 +463,31 @@ class _MateriDetailViewState extends State<_MateriDetailView> {
                   ),
                   elevation: 4,
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ARMenuScreen(),
-                    ),
-                  );
+                onPressed: () async {
+                  final hasPermission =
+                      await PermissionService.hasCameraPermission();
+                  if (!context.mounted) return;
+
+                  if (hasPermission) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ARMenuScreen(),
+                      ),
+                    );
+                  } else {
+                    await CameraPermissionDialog.show(
+                      context,
+                      onGranted: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ARMenuScreen(),
+                          ),
+                        );
+                      },
+                    );
+                  }
                 },
               ),
 

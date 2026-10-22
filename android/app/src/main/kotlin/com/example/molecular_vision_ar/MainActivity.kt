@@ -54,6 +54,14 @@ class MainActivity : FlutterActivity() {
             android.util.Log.e("MainActivity", "Fallback register WebViewFlutterPlugin failed", t)
         }
 
+        try {
+            if (!flutterEngine.plugins.has(com.baseflow.permissionhandler.PermissionHandlerPlugin::class.java)) {
+                flutterEngine.plugins.add(com.baseflow.permissionhandler.PermissionHandlerPlugin())
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("MainActivity", "Fallback register PermissionHandlerPlugin failed", t)
+        }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "isAppInstalled" -> {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/models/chemistry_topic.dart';
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/camera_permission_dialog.dart';
 import '../../../home/presentation/widgets/menu_card.dart';
 
 import 'ar_unity_screen.dart';
@@ -37,16 +39,20 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
     });
   }
 
-  void _handleTopicTap(ChemistryTopic topic) {
+  Future<void> _handleTopicTap(ChemistryTopic topic) async {
+    final hasPermission = await PermissionService.hasCameraPermission();
+    if (!mounted) return;
+
+    if (!hasPermission) {
+      final granted = await CameraPermissionDialog.show(context);
+      if (!granted || !mounted) return;
+    }
+
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ARUnityScreen(topic: topic),
-      ),
+      MaterialPageRoute(builder: (_) => ARUnityScreen(topic: topic)),
     );
   }
-
-
 
   @override
   void dispose() {
@@ -59,11 +65,18 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          "Augmented Reality",
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
         ),
+        title: const Text("Augmented Reality"),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: false,
         iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: const TextStyle(
           color: Colors.white,
@@ -77,18 +90,11 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
           children: [
             TextField(
               controller: searchController,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: "Cari materi Augmented Reality",
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: .5),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: Colors.white,
-                ),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: .5)),
+                prefixIcon: const Icon(Icons.search, color: Colors.white),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: .08),
                 border: OutlineInputBorder(
@@ -103,8 +109,7 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
                 itemCount: filteredTopics.length,
                 itemBuilder: (context, index) {
                   final topic = filteredTopics[index];
-                  final displayTitle =
-                      topic.practicumTitle ?? topic.title;
+                  final displayTitle = topic.practicumTitle ?? topic.title;
 
                   return MenuCard(
                     icon: topic.icon,
@@ -121,4 +126,4 @@ class _ARMenuScreenState extends State<ARMenuScreen> {
       ),
     );
   }
-}
+}

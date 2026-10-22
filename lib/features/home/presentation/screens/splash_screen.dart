@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_loading_bar.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -23,6 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Meminta izin kamera awal saat pertama kali membuka aplikasi setelah download
+    PermissionService.requestInitialCameraPermission();
 
     Timer.periodic(const Duration(milliseconds: 45), (timer) {
       if (!mounted) return;
