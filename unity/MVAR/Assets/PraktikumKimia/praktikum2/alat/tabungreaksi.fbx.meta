@@ -3,7 +3,12 @@ guid: 8a463fe73d3ff5d4ba2a8e754d4421c9
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: KACA TRANSPARAN
+    second: {fileID: 2100000, guid: 11d2ad034dd224441b83b618ccf6bb99, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -81,3 +81,5 @@ unity/**/.vscode/
 **/Assets/SamplesResources/
 **/[Aa]ssets/_Recovery/
 assets.zip
+.mcp.json
+*.mcp.json

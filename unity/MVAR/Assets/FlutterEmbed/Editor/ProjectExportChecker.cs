@@ -257,8 +257,8 @@ internal class ProjectExportChecker
         // We can't get the current BuildPlayerOptions from the active Unity Editor.
         // Create a new instance and set all relevant settings.
 
-        // Include some build options.
-        BuildOptions buildOptions = BuildOptions.None;
+        // Include LZ4HC compression option for compact exports
+        BuildOptions buildOptions = BuildOptions.CompressWithLz4HC;
         if (EditorUserBuildSettings.development)
         {
             buildOptions |= BuildOptions.Development;

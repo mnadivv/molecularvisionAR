@@ -2559,7 +2559,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 961de3f1b50afef48942260b1ba1829e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardTahanGeser3D
-  objek3D: {fileID: 919132149155446097, guid: 3de7cb3133969224386016979ffb7058, type: 3}
+  objek3D: {fileID: 919132149155446097, guid: b59ee6f2ce92e6c4eba166657c20030b, type: 3}
   kamera: {fileID: 0}
   panelScrollAlat: {fileID: 0}
   manajerSlot: {fileID: 0}
@@ -2570,7 +2570,7 @@ MonoBehaviour:
   waktuTahan: 0.3
   toleransiGeser: 40
   jarakDepan: 0.3
-  pengaliUkuran: 1
+  pengaliUkuran: 0.82
   rotasiTambahan: {x: 0, y: 0, z: 0}
 --- !u!1 &464844108
 GameObject:
@@ -7517,8 +7517,8 @@ GameObject:
   - component: {fileID: 1327690143}
   - component: {fileID: 1327690142}
   - component: {fileID: 1327690141}
-  - component: {fileID: 1327690144}
   - component: {fileID: 1327690145}
+  - component: {fileID: 1327690146}
   m_Layer: 0
   m_Name: ImageTarget
   m_TagString: Untagged
@@ -7596,7 +7596,7 @@ MonoBehaviour:
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1327690144}
+  mPreview: {fileID: 1327690146}
 --- !u!4 &1327690143
 Transform:
   m_ObjectHideFlags: 0
@@ -7612,25 +7612,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1327690144
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1327690139}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
-  mObserverBehaviour: {fileID: 1327690142}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: Gemini_Generated_Image_ed2qaced2qaced2q
-  mDatasetName: 
-  mCastedBehaviour: {fileID: 1327690142}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!114 &1327690145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7654,6 +7635,25 @@ MonoBehaviour:
   semuaManajerSlot:
   - {fileID: 180054107}
   manajerSpotPlate: {fileID: 0}
+--- !u!114 &1327690146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327690139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
+  mObserverBehaviour: {fileID: 1327690142}
+  mHiddenRoot: {fileID: 0}
+  mTargetName: Gemini_Generated_Image_ed2qaced2qaced2q
+  mDatasetName: 
+  mCastedBehaviour: {fileID: 1327690142}
+  mMeshFilter: {fileID: 0}
+  mMeshRenderer: {fileID: 0}
 --- !u!1 &1352381136
 GameObject:
   m_ObjectHideFlags: 0

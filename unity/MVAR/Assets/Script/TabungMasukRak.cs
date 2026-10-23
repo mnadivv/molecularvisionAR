@@ -57,7 +57,20 @@ public class TabungMasukRak : MonoBehaviour
         ManajerTakaran m = ManajerTakaran.Instance;
         if (m == null || m.materialKaca == null) return;
         Renderer[] rs = GetComponentsInChildren<Renderer>(true);
-        for (int i = 0; i < rs.Length; i++) rs[i].sharedMaterial = m.materialKaca;
+        for (int i = 0; i < rs.Length; i++)
+        {
+            Material[] materials = rs[i].sharedMaterials;
+            bool changed = false;
+            for (int j = 0; j < materials.Length; j++)
+            {
+                if (materials[j] == null) continue;
+                string nama = materials[j].name.ToLowerInvariant();
+                if (!nama.Contains("kaca") && !nama.Contains("glass")) continue;
+                materials[j] = m.materialKaca;
+                changed = true;
+            }
+            if (changed) rs[i].sharedMaterials = materials;
+        }
     }
 
     private static float EaseInOut(float k)

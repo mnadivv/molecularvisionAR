@@ -3,7 +3,17 @@ guid: 4c1dd23c7b58f6b48859fc483db6996f
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Abu_Cekungan
+    second: {fileID: 2100000, guid: bd775d91bdf3afa4da96274253817f98, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Porselin_Putih
+    second: {fileID: 2100000, guid: b68ee3299af2f814eb4287246b9e9f19, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

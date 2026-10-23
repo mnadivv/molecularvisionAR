@@ -218,8 +218,9 @@ public class CardTahanGeser3D : MonoBehaviour,
             if (ManajerPilihItem.Instance != null) ManajerPilihItem.Instance.TampilkanSalah();
             diblokir = true; pointerDitekan = false; return;
         }
-        bool cardKhususP2 = penerimaSP != null;
-        bool cardBersamaP2 = !string.IsNullOrEmpty(namaBahanSP) && penerimaSP == null;
+        bool cardP1DanP2 = penerima != null && penerimaSP != null;
+        bool cardKhususP2 = penerimaSP != null && !cardP1DanP2;
+        bool cardBersamaP2 = !string.IsNullOrEmpty(namaBahanSP) && (penerimaSP == null || cardP1DanP2);
         // Blokir hanya kalau: (a) bukan card P2 sama sekali, DAN ManajerPilihItem blokir,
         //                ATAU (b) card khusus P2 dan P2 belum aktif
         if (cardKhususP2 && !p2Aktif && namaBahanSP != "PlateTetes")
@@ -307,8 +308,8 @@ public class CardTahanGeser3D : MonoBehaviour,
         if (instans == null) instans = Instantiate(modelDrag);
         if (modelDrag.name.ToLowerInvariant().Contains("pipet") || modelDrag.name.ToLowerInvariant().Contains("pipeline") || modelDrag.name.ToLowerInvariant().Contains("aqua") || modelDrag.name.ToLowerInvariant().Contains("akuades"))
         {
-            foreach (Camera kameraModel in instans.GetComponentsInChildren<Camera>(true)) Destroy(kameraModel);
-            foreach (Light lampuModel in instans.GetComponentsInChildren<Light>(true)) Destroy(lampuModel);
+            foreach (Camera kameraModel in instans.GetComponentsInChildren<Camera>(true)) kameraModel.enabled = false;
+            foreach (Light lampuModel in instans.GetComponentsInChildren<Light>(true)) lampuModel.enabled = false;
         }
         instans.name = modelDrag.name + "_drag";
         instans.transform.SetParent(AmbilWadah(), true);
@@ -424,8 +425,9 @@ public class CardTahanGeser3D : MonoBehaviour,
             return target.DropPlate(posisiLayarModel, instans, cam);
         if (namaBahanSP == "AsamBenzoat") return target.DropSumberAsam(posisiLayarModel,cam,instans);
         if (namaBahanSP == "TesKonduktor")
-            return target.DropTespen(posisiLayarModel, cam);
+            return target.DropTespen(posisiLayarModel, cam, instans);
         if (namaBahanSP == "Spatula") return target.DropBahan("Spatula",posisiLayarModel,cam,instans);
+        if (namaBahanSP == "PipetTetes") return target.DropBahan("PipetTetes", posisiLayarModel, cam, instans);
         return !string.IsNullOrEmpty(namaBahanSP) &&
                target.DropBahan(namaBahanSP, posisiLayarModel, cam, instans);
     }

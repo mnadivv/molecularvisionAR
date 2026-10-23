@@ -15,6 +15,9 @@ public class KontrolMarkerPraktikum : MonoBehaviour
     private UnityAction ditemukan, hilang;
     private bool markerSebelumnyaTerlihat;
     private ObserverBehaviour observer;
+    private float mulaiHilang = -1f;
+    private Dictionary<GameObject, bool> statusTombolSebelumHilang;
+    private const float toleransiHilangDetik = 0.35f;
 
     private void Awake()
     {
@@ -34,18 +37,16 @@ public class KontrolMarkerPraktikum : MonoBehaviour
         if (scrollBahan == null) scrollBahan = GameObject.Find("ScrollBahan");
         if (tombolAlat == null) tombolAlat = GameObject.Find("ButtonAlat");
         if (tombolBahan == null) tombolBahan = GameObject.Find("ButtonBahan");
-        if (manajerItem == null) manajerItem = FindFirstObjectByType<ManajerPilihItem>(FindObjectsInactive.Include);
+        if (manajerItem == null) manajerItem = FindAnyObjectByType<ManajerPilihItem>(FindObjectsInactive.Include);
         if (manajerTakaran == null) manajerTakaran = ManajerTakaran.Instance;
         if (manajerSpotPlate == null) manajerSpotPlate = ManajerSpotPlate.Instance;
         if (semuaManajerSlot == null || semuaManajerSlot.Length == 0)
             semuaManajerSlot = FindObjectsByType<ManajerSlotTabung>(FindObjectsInactive.Include);
-        bool markerValid = observer != null && observer.TargetStatus.Status == Status.TRACKED;
-        if (!markerValid) ResetSemuaSoal();
-        TerapkanStatus(markerValid);
+        TerapkanStatus(MarkerTerlihat());
     }
     private void Update()
     {
-        TerapkanStatus(observer != null && observer.TargetStatus.Status == Status.TRACKED);
+        TerapkanStatus(MarkerTerlihat());
     }
     private void OnDestroy()
     {
@@ -57,38 +58,70 @@ public class KontrolMarkerPraktikum : MonoBehaviour
     }
     private void SaatMarkerDitemukan()
     {
-        if (observer != null && observer.TargetStatus.Status == Status.TRACKED) TerapkanStatus(true);
+        if (MarkerTerlihat()) TerapkanStatus(true);
     }
     private void SaatMarkerHilang()
     {
-        ResetSemuaSoal();
         TerapkanStatus(false);
     }
+    private bool MarkerTerlihat()
+    {
+        if (observer == null) return false;
+        Status status = observer.TargetStatus.Status;
+        return status == Status.TRACKED;
+    }
+
+
     private void TerapkanStatus(bool terlihat)
     {
         if (terlihat)
         {
+            mulaiHilang = -1f;
             if (!markerSebelumnyaTerlihat)
-            {
-                if (tombolAlat != null) tombolAlat.SetActive(true);
-                if (tombolBahan != null) tombolBahan.SetActive(true);
-                if (scrollAlat != null) scrollAlat.SetActive(false);
-                if (scrollBahan != null) scrollBahan.SetActive(false);
-                if (awalMulai != null) awalMulai.SetActive(true);
-            }
+                TampilkanAugmentasi();
+
             markerSebelumnyaTerlihat = true;
             return;
         }
-        if (markerSebelumnyaTerlihat) ResetSemuaSoal();
-        if (tombolAlat != null) tombolAlat.SetActive(false);
-        if (tombolBahan != null) tombolBahan.SetActive(false);
-        if (scrollAlat != null) scrollAlat.SetActive(false);
-        if (scrollBahan != null) scrollBahan.SetActive(false);
-        if (awalMulai != null) awalMulai.SetActive(false);
-        if (pilihanPercobaan != null) pilihanPercobaan.SetActive(false);
-        markerSebelumnyaTerlihat = false;
+
+        // Tunggu sebentar setelah marker lepas agar tombol tidak berkedip saat tracking pulih.
+        if (markerSebelumnyaTerlihat)
+        {
+            if (mulaiHilang < 0f) mulaiHilang = Time.unscaledTime;
+            if (Time.unscaledTime - mulaiHilang < toleransiHilangDetik) return;
+            markerSebelumnyaTerlihat = false;
+        }
+
+        // Tetap paksa tombol tersembunyi jika marker belum ada, termasuk bila UI lain
+        // sempat mengaktifkannya lagi.
+        SembunyikanAugmentasi();
     }
-    private Transform AmbilPanelPercobaan2()
+
+    private void SembunyikanAugmentasi()
+    {
+        if (statusTombolSebelumHilang == null)
+            statusTombolSebelumHilang = new Dictionary<GameObject, bool>();
+        SimpanDanSembunyikanTombol(tombolAlat);
+        SimpanDanSembunyikanTombol(tombolBahan);
+    }
+    private void SimpanDanSembunyikanTombol(GameObject tombol)
+    {
+        if (tombol == null || statusTombolSebelumHilang.ContainsKey(tombol)) return;
+        statusTombolSebelumHilang[tombol] = tombol.activeSelf;
+        tombol.SetActive(false);
+    }
+
+    private void TampilkanAugmentasi()
+    {
+        if (statusTombolSebelumHilang != null)
+            foreach (KeyValuePair<GameObject, bool> item in statusTombolSebelumHilang)
+                if (item.Key != null) item.Key.SetActive(item.Value);
+        statusTombolSebelumHilang = null;
+
+        // Tombol alat/bahan tersedia setiap kali marker sedang terlacak.
+        if (tombolAlat != null) tombolAlat.SetActive(true);
+        if (tombolBahan != null) tombolBahan.SetActive(true);
+    }    private Transform AmbilPanelPercobaan2()
     {
         Transform menuSoal = awalMulai != null ? awalMulai.transform.parent : null;
         return menuSoal != null ? menuSoal.Find("Percobaan2") : null;
@@ -119,7 +152,7 @@ public class KontrolMarkerPraktikum : MonoBehaviour
             ResetPanelSoal(menuSoal.Find("Percobaan1"));
             if (p2 == null) ResetPanelSoal(menuSoal.Find("Percobaan2"));
         }
-        if (pilihanPercobaan != null) pilihanPercobaan.SetActive(false);
+        // Panel pilihan dikelola oleh alur UI, jangan timpa saat status marker berubah.
     }
     private static void ResetPanelSoal(Transform percobaan)
     {
@@ -137,3 +170,5 @@ public class KontrolMarkerPraktikum : MonoBehaviour
         }
     }
 }
+
+

@@ -40,9 +40,7 @@ public class UnityAndroidReceiver : MonoBehaviour
 
     private void Awake()
     {
-        // 1. Optimasi performa dan frame rate kamera AR
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 60;
+        // Batas FPS global dikelola oleh OptimasiPanasPerangkat.
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         // 2. Kaitkan optimasi kamera Vuforia berkecepatan tinggi saat Vuforia Engine dimulai
@@ -81,13 +79,13 @@ public class UnityAndroidReceiver : MonoBehaviour
         try
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            // Meminta sensor kamera Android bekerja pada FPS tertinggi dan buffer delay terendah
-            VuforiaBehaviour.Instance.CameraDevice.SetCameraMode(CameraMode.MODE_OPTIMIZE_SPEED);
+            // Memakai mode kamera seimbang agar detail marker tetap jelas dengan beban perangkat terkendali
+            VuforiaBehaviour.Instance.CameraDevice.SetCameraMode(CameraMode.MODE_DEFAULT);
 
             // Menjaga continuous autofocus aktif agar tidak terjadi shutter hunting delay
             VuforiaBehaviour.Instance.CameraDevice.SetFocusMode(FocusMode.FOCUS_MODE_CONTINUOUSAUTO);
 
-            Debug.Log("[Vuforia-Receiver] Sukses set CameraMode: MODE_OPTIMIZE_SPEED & FOCUS_MODE_CONTINUOUSAUTO pada Android");
+            Debug.Log("[Vuforia-Receiver] Sukses set CameraMode: MODE_DEFAULT & FOCUS_MODE_CONTINUOUSAUTO pada Android");
 #else
             Debug.Log("[Vuforia-Receiver] Play Mode di Unity Editor: Menggunakan webcam profil default.");
 #endif

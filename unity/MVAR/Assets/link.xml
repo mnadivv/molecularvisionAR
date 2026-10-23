@@ -1,0 +1,12 @@
+<linker>
+  <!-- Preserve essential Unity core and JNI modules for Flutter integration -->
+  <assembly fullname="UnityEngine.CoreModule" preserve="all"/>
+  <assembly fullname="UnityEngine.AndroidJNIModule" preserve="all"/>
+  
+  <!-- Preserve Vuforia AR Engine -->
+  <assembly fullname="VuforiaEngine" preserve="all"/>
+  <assembly fullname="Vuforia.UnityExtensions" preserve="all"/>
+  
+  <!-- Preserve game project scripts (prevents stripping of SendToFlutter, UnityAndroidReceiver, etc.) -->
+  <assembly fullname="Assembly-CSharp" preserve="all"/>
+</linker>

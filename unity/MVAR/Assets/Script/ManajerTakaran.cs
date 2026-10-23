@@ -1,3 +1,5 @@
+using System;
+
 using System.Collections;
 
 using System.Collections.Generic;
@@ -680,7 +682,20 @@ public class ManajerTakaran : MonoBehaviour
 
         // Hancurkan sisa anak wadah Model3D_Spawn yang mungkin tertinggal
 
-        GameObject wadah = pertahankanObjekLuar ? null : GameObject.Find("Model3D_Spawn");
+        GameObject wadah = null;
+        if (!pertahankanObjekLuar)
+        {
+            GameObject[] kandidatWadah = Resources.FindObjectsOfTypeAll<GameObject>();
+            for (int iWadah = 0; iWadah < kandidatWadah.Length; iWadah++)
+            {
+                GameObject kandidat = kandidatWadah[iWadah];
+                if (kandidat != null && kandidat.scene.IsValid() && kandidat.name == "Model3D_Spawn")
+                {
+                    wadah = kandidat;
+                    break;
+                }
+            }
+        }
 
         if (wadah != null)
 
@@ -1040,6 +1055,60 @@ public class ManajerTakaran : MonoBehaviour
 
 
 
+    public IEnumerator TeteskanKeSpot(string namaTarget, int jumlahBenar, System.Func<int, IEnumerator> animasiTetes, System.Action<bool> selesai, string namaCairan = "petroleum ether")
+    {
+        if (panelTakaran == null)
+        {
+            if (selesai != null) selesai(false);
+            yield break;
+        }
+
+        permintaanTetes = 0;
+        tekanSelesai = false;
+        batal = false;
+        int hitung = 0;
+        panelTakaran.SetActive(true);
+        if (grupVolume != null) grupVolume.SetActive(false);
+        if (grupTetes != null) grupTetes.SetActive(true);
+        if (teksJudul != null) teksJudul.text = "Teteskan tepat " + jumlahBenar + " tetes " + namaCairan + " ke " + namaTarget + ", lalu tekan Selesai";
+        UpdateTeksTetes(hitung);
+
+        while (true)
+        {
+            if (batal)
+            {
+                batal = false;
+                panelTakaran.SetActive(false);
+                if (grupTetes != null) grupTetes.SetActive(false);
+                if (selesai != null) selesai(false);
+                yield break;
+            }
+
+            if (permintaanTetes > 0)
+            {
+                permintaanTetes--;
+                if (hitung < maksKlikTetes)
+                {
+                    hitung++;
+                    UpdateTeksTetes(hitung);
+                    if (animasiTetes != null) yield return animasiTetes(hitung);
+                }
+            }
+
+            if (tekanSelesai)
+            {
+                tekanSelesai = false;
+                bool benar = hitung == jumlahBenar;
+                panelTakaran.SetActive(false);
+                if (grupTetes != null) grupTetes.SetActive(false);
+                if (!benar && ManajerPilihItem.Instance != null) ManajerPilihItem.Instance.TampilkanSalah();
+                if (selesai != null) selesai(benar);
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
     private IEnumerator Sesi(LangkahTakaran l, GameObject model, Camera cam)
 
     {
@@ -1128,20 +1197,6 @@ public class ManajerTakaran : MonoBehaviour
 
         GameObject cairanPipet = null;
 
-            if (materialKaca != null && l.jenis == Jenis.Tetes)
-
-            {
-
-                // Hanya pipet tetes yang dibuat tembus pandang; botol akuades mempertahankan warna aslinya
-
-                Renderer[] rsModel = model.GetComponentsInChildren<Renderer>(true);
-
-                for (int iR = 0; iR < rsModel.Length; iR++) rsModel[iR].sharedMaterial = materialKaca;
-
-            }
-
-
-
         try
 
         {
@@ -1164,24 +1219,25 @@ public class ManajerTakaran : MonoBehaviour
 
                     for (int i = 1; i < rendererSumber.Length; i++) boundsSumber.Encapsulate(rendererSumber[i].bounds);
 
-                    Vector3 mulutSumber = new Vector3(boundsSumber.center.x, boundsSumber.max.y, boundsSumber.center.z);
+                    Vector3 arahAtasLayar = cam != null ? cam.transform.up.normalized : Vector3.up;
+                    // Cari bibir paling atas sumber pada arah atas layar, lalu turunkan ujung pipet lurus.
+                    Vector3 e = boundsSumber.extents;
+                    float setengahTinggi = Mathf.Abs(arahAtasLayar.x) * e.x + Mathf.Abs(arahAtasLayar.y) * e.y + Mathf.Abs(arahAtasLayar.z) * e.z;
+                    Vector3 mulutSumber = boundsSumber.center + arahAtasLayar * setengahTinggi;
+                    Vector3 titikDiAtas = mulutSumber + arahAtasLayar * 0.025f;
+                    Vector3 titikMasuk = mulutSumber - arahAtasLayar * 0.015f;
+                    Vector3 diAtasLabu = rak.InverseTransformPoint(titikDiAtas);
+                    Vector3 diMulutLabu = rak.InverseTransformPoint(titikMasuk);
 
-                    Vector3 diAtasLabu = rak.InverseTransformPoint(mulutSumber - Vector3.up * Mathf.Min(0.08f, boundsSumber.size.y * 0.08f) + Vector3.up * 0.015f);
-
-                    // Masukkan ujung pipet sedikit ke dalam bukaan leher labu.
-
-                    Vector3 diMulutLabu = rak.InverseTransformPoint(mulutSumber + Vector3.down * 0.015f);
-
-
-
+                    // Rotasi rig dikunci; gerak pengambilan hanya turun lalu naik pada garis yang sama.
+                    root.localRotation = Quaternion.identity;
                     yield return GerakRig(root, diAtasLabu, 0f, 0.52f);
-
+                    root.localRotation = Quaternion.identity;
                     yield return GerakRig(root, diMulutLabu, 0f, 0.38f);
-
+                    root.localRotation = Quaternion.identity;
                     cairanPipet = BuatCairanPipet(root, l.warnaCairan, model.transform);
-
                     yield return IsiPipet(cairanPipet, 0.52f);
-
+                    root.localRotation = Quaternion.identity;
                     yield return GerakRig(root, diAtasLabu, 0f, 0.38f);
 
                 }
@@ -1956,7 +2012,8 @@ public class ManajerTakaran : MonoBehaviour
 
             c.mat = new Material(materialCairan);
 
-            c.alphaDasar = c.mat.HasProperty("_BaseColor") ? c.mat.GetColor("_BaseColor").a : 0.6f;
+            // Larutan perlu terbaca jelas melalui tabung AR; material kaca tetap menunjukkan garis tipisnya.
+            c.alphaDasar = Mathf.Max(c.mat.HasProperty("_BaseColor") ? c.mat.GetColor("_BaseColor").a : 0.6f, 0.88f);
 
             r.sharedMaterial = c.mat;
 
@@ -1970,16 +2027,24 @@ public class ManajerTakaran : MonoBehaviour
 
 
 
-        // Kaca tabung dibuat transparan supaya cairan terlihat
-
+        // Ganti slot material kaca saja; slot etanol/kristal harus tetap agar warna isi tampak.
         if (materialKaca != null && slot.Model != null)
-
         {
-
-            Renderer rt = slot.Model.GetComponentInChildren<Renderer>();
-
-            if (rt != null) rt.sharedMaterial = materialKaca;
-
+            Renderer[] renderersKaca = slot.Model.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderersKaca.Length; i++)
+            {
+                Material[] materials = renderersKaca[i].sharedMaterials;
+                bool berubah = false;
+                for (int j = 0; j < materials.Length; j++)
+                {
+                    if (materials[j] == null) continue;
+                    string namaMaterial = materials[j].name.ToLowerInvariant();
+                    if (!namaMaterial.Contains("kaca") && !namaMaterial.Contains("glass")) continue;
+                    materials[j] = materialKaca;
+                    berubah = true;
+                }
+                if (berubah) renderersKaca[i].sharedMaterials = materials;
+            }
         }
 
 
@@ -2503,9 +2568,9 @@ public class ManajerTakaran : MonoBehaviour
 
         root.localScale = Vector3.one;
 
-        foreach (Light lt in go.GetComponentsInChildren<Light>(true)) Destroy(lt);
+        foreach (Light lt in go.GetComponentsInChildren<Light>(true)) lt.enabled = false;
 
-        foreach (Camera km in go.GetComponentsInChildren<Camera>(true)) Destroy(km);
+        foreach (Camera km in go.GetComponentsInChildren<Camera>(true)) km.enabled = false;
 
         foreach (AudioListener al in go.GetComponentsInChildren<AudioListener>(true)) Destroy(al);
 
@@ -2553,7 +2618,7 @@ public class ManajerTakaran : MonoBehaviour
 
         g.pivotCairan = BuatPivotDasar(tCairan, root);
 
-        g.pivotCairan.localScale = new Vector3(1f, 0.0001f, 1f);
+        g.pivotCairan.localScale = new Vector3(1f, 0.025f, 1f);
 
         BeriWarna(tCairan.GetComponent<Renderer>(), warnaLarutanGelas, 0.9f);
 
@@ -2865,7 +2930,7 @@ public class ManajerTakaran : MonoBehaviour
 
             if (adaEndapan) KecilkanSilinder(c.endapan, skalaEnd, posEnd, 1f - u);
 
-            g.pivotCairan.localScale = new Vector3(1f, Mathf.Max(0.0001f, u), 1f);
+            g.pivotCairan.localScale = new Vector3(1f, Mathf.Lerp(0.025f, 1f, u), 1f);
 
 
 
@@ -3283,7 +3348,7 @@ public class ManajerTakaran : MonoBehaviour
 
             float u = Mathf.Lerp(uDari, uKe, k);
 
-            g.pivotCairan.localScale = new Vector3(1f, Mathf.Max(0.0001f, u), 1f);
+            g.pivotCairan.localScale = new Vector3(1f, Mathf.Lerp(0.025f, 1f, u), 1f);
 
 
 

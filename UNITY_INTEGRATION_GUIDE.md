@@ -50,21 +50,33 @@ Aplikasi Flutter akan langsung ter-build dan berjalan lancar di HP Android merek
 
 ---
 
-### 3. Membangun APK AR Unity (Sekali Saja)
-1. Di Unity Editor, buka scene AR Vuforia Anda.
-2. Pastikan script [`UnityAndroidReceiver.cs`](file:///c:/MVAR/molecularvisionAR/unity/MVAR/Assets/Scripts/UnityAndroidReceiver.cs) sudah terpasang pada GameObject di Scene:
-   - Hubungkan parent wadah molekul 3D ke kolom **Targets Or Models Root**.
-   - (Opsional) Hubungkan UI Text dan UI Button Back.
-3. Buka **File > Build Settings** (atau **Build Profiles** di Unity 6):
-   - Klik **Player Settings > Android**.
-   - Atur **Identification > Package Name**:
+### 3. Export Proyek Unity ke Flutter Embed (Super Ringan & Terkompresi)
+Proyek ini menggunakan **`flutter_embed_unity`**, di mana Unity diexport sebagai modul Android library (`android/unityLibrary`):
+
+#### Cara 1: Menggunakan Script Otomatis (Direkomendasikan)
+Cukup jalankan script PowerShell berikut dari terminal root repository:
+```powershell
+.\export_unity_to_flutter.ps1
+```
+Script ini akan otomatis:
+- Menjalankan Unity 6 dalam mode headless/batchmode.
+- Mengaktifkan kompresi penuh **LZ4HC (High Compression)**.
+- Menjalankan **`ShaderBuildStripper`** untuk membuang shader yang tidak terpakai (Sentis, Lightmaps, Fog, Cascaded Shadows, dsb.).
+- Menerapkan **IL2CPP OptimizeSize** dan **Managed Stripping High** sehingga ukuran build minimal.
+- Mengekspor langsung ke folder `android/unityLibrary`.
+
+#### Cara 2: Dari Menu Unity Editor
+1. Buka Unity Editor dengan proyek `unity/MVAR`.
+2. Pada menu bar atas, klik **Flutter Embed**:
+   - Pilih **Export Direct to Android unityLibrary (Compressed LZ4HC)** untuk export langsung.
+   - Atau pilih **Export project to flutter app (Android)** lalu arahkan folder ke:
      ```text
-     com.mvar.unityar
+     <lokasi_repo>/android/unityLibrary
      ```
-4. Klik **Build** untuk menghasilkan file `MVAR_AR.apk`.
-5. Pasang APK tersebut ke HP pengujian.
+3. Tunggu hingga proses export selesai. Folder `android/unityLibrary` akan otomatis terisi dan siap dikompilasi oleh Flutter.
 
 ---
+
 
 ## 🔄 Cara Kerja Interaksi Antara Flutter dan Unity
 

@@ -3,7 +3,12 @@ guid: 4e2a873ab58027e41a6eb0ee32f3997d
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Kayu_Kuning_TusukGigi
+    second: {fileID: 2100000, guid: 9c49d4c2e9f1ec149a29bd2e21ffc14a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -167,6 +167,21 @@ internal class ProjectExporterAndroid : ProjectExporter
             Debug.Log($"Deleted {burstDebugInformation.FullName}");
         }
 
+        // Clean up symbols directory if exported to keep exported library lightweight
+        string[] symbolsDirs = new[]
+        {
+            Path.Combine(exportPath, "symbols"),
+            Path.Join(exportPath, "..", "symbols")
+        };
+        foreach (var symDir in symbolsDirs)
+        {
+            if (Directory.Exists(symDir))
+            {
+                Directory.Delete(symDir, true);
+                Debug.Log($"Deleted symbols directory: {symDir}");
+            }
+        }
+
         Debug.Log("Transforming Unity export for Flutter integration complete");
     }
 

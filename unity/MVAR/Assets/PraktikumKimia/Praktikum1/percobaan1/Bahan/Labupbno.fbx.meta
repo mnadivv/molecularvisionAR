@@ -3,7 +3,17 @@ guid: 1227b8a94a3ea0f46b3723112d375e1d
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Kaca_Labu
+    second: {fileID: 2100000, guid: 11d2ad034dd224441b83b618ccf6bb99, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Larutan_PbNO32
+    second: {fileID: 2100000, guid: f8047553cc2ac8c43b90321287a354e2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

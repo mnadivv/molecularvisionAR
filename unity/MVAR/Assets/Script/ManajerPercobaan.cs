@@ -46,6 +46,13 @@ public class ManajerPercobaan : MonoBehaviour
     [Tooltip("Percobaan yang sudah selesai bisa dimasuki lagi dan diulang dari soal pertama.")]
     public bool izinkanUlang = true;
 
+    private GameObject[] halamanKesimpulanP2 = new GameObject[3];
+    private GameObject bayanganKesimpulanP2;
+    private Button tombolDataP2;
+    private GameObject tombolAlat;
+    private GameObject tombolBahan;
+    private int halamanAktifKesimpulanP2 = -1;
+
     private void Awake()
     {
         Instance = this;
@@ -64,10 +71,13 @@ public class ManajerPercobaan : MonoBehaviour
             Image img = p.tombolPilihan.GetComponent<Image>();
             if (img != null) p.spriteAwal = img.sprite;
         }
+
+        SiapkanAlurKesimpulanP2();
     }
 
     private void Start()
     {
+        TutupAlurKesimpulanP2();
         TerapkanStatus();
     }
 
@@ -89,6 +99,8 @@ public class ManajerPercobaan : MonoBehaviour
     {
         if (!Terbuka(i)) return;
         DataPercobaan p = percobaan[i];
+
+        TutupAlurKesimpulanP2();
 
         // Hapus state/notifikasi Percobaan 2 saat kembali ke Percobaan 1.
         if (i == 0 && ManajerSpotPlate.Instance != null)
@@ -159,7 +171,7 @@ public class ManajerPercobaan : MonoBehaviour
         }
     }
 
-    /// <summary>Dipanggil otomatis saat panel Kesimpulan percobaan ke-i tampil.</summary>
+    /// <summary>Tandai percobaan selesai, bersihkan meja, dan tampilkan menu pilihan.</summary>
     public void PercobaanSelesai(int i)
     {
         if (i < 0 || i >= percobaan.Count) return;
@@ -175,11 +187,138 @@ public class ManajerPercobaan : MonoBehaviour
         TerapkanStatus();
     }
 
+    private void SiapkanAlurKesimpulanP2()
+    {
+        if (percobaan.Count < 2 || percobaan[1].soalPertama == null) return;
+
+        Transform akarP2 = percobaan[1].soalPertama.transform.parent;
+        if (akarP2 == null) return;
+
+        halamanKesimpulanP2[0] = CariAnak(akarP2, "Kesimpulan1")?.gameObject;
+        halamanKesimpulanP2[1] = CariAnak(akarP2, "Kesimpulan2")?.gameObject;
+        halamanKesimpulanP2[2] = CariAnak(akarP2, "Kesimpulan3")?.gameObject;
+        // Gunakan shadow milik Percobaan2, bukan shadow kecil yang ada di dalam panel soal.
+        Transform shadow = CariAnakLangsung(akarP2, "BackgroundShadow")
+            ?? CariAnakLangsung(akarP2, "BackgorundShadow");
+        bayanganKesimpulanP2 = shadow != null ? shadow.gameObject : null;
+        tombolAlat = GameObject.Find("ButtonAlat");
+        tombolBahan = GameObject.Find("ButtonBahan");
+
+        Transform soal7 = CariAnak(akarP2, "Soal7");
+        if (soal7 != null)
+        {
+            Button[] tombolDalamSoal7 = soal7.GetComponentsInChildren<Button>(true);
+            for (int i = 0; i < tombolDalamSoal7.Length; i++)
+            {
+                if (tombolDalamSoal7[i].gameObject.name == "ButtonData")
+                {
+                    tombolDataP2 = tombolDalamSoal7[i];
+                    tombolDataP2.onClick.RemoveListener(BukaKesimpulanP2);
+                    tombolDataP2.onClick.AddListener(BukaKesimpulanP2);
+                    break;
+                }
+            }
+        }
+
+        for (int i = 0; i < halamanKesimpulanP2.Length; i++)
+        {
+            GameObject halaman = halamanKesimpulanP2[i];
+            if (halaman == null) continue;
+
+            Button tombolHalaman = halaman.GetComponent<Button>();
+            if (tombolHalaman == null) tombolHalaman = halaman.AddComponent<Button>();
+            tombolHalaman.targetGraphic = halaman.GetComponent<Graphic>();
+            tombolHalaman.onClick.RemoveListener(LanjutKesimpulanP2);
+            tombolHalaman.onClick.AddListener(LanjutKesimpulanP2);
+        }
+
+        if (bayanganKesimpulanP2 != null)
+        {
+            Button tombolBayangan = bayanganKesimpulanP2.GetComponent<Button>();
+            if (tombolBayangan == null) tombolBayangan = bayanganKesimpulanP2.AddComponent<Button>();
+            tombolBayangan.targetGraphic = bayanganKesimpulanP2.GetComponent<Graphic>();
+            tombolBayangan.onClick.RemoveListener(LanjutKesimpulanP2);
+            tombolBayangan.onClick.AddListener(LanjutKesimpulanP2);
+        }
+    }
+
+    private void BukaKesimpulanP2()
+    {
+        if (halamanKesimpulanP2[0] == null) return;
+        halamanAktifKesimpulanP2 = 0;
+        TampilkanHalamanKesimpulanP2();
+    }
+
+    private void LanjutKesimpulanP2()
+    {
+        if (halamanAktifKesimpulanP2 < 0) return;
+
+        if (halamanAktifKesimpulanP2 < halamanKesimpulanP2.Length - 1)
+        {
+            halamanAktifKesimpulanP2++;
+            TampilkanHalamanKesimpulanP2();
+            return;
+        }
+
+        TutupAlurKesimpulanP2();
+        PercobaanSelesai(1);
+
+        // Tombol alat dan bahan disembunyikan saat hasil dibuka; munculkan lagi di menu.
+        if (tombolAlat != null) tombolAlat.SetActive(true);
+        if (tombolBahan != null) tombolBahan.SetActive(true);
+        if (panelPilihan != null) panelPilihan.SetActive(true);
+        for (int i = 0; i < percobaan.Count; i++)
+            if (percobaan[i].tombolPilihan != null)
+                percobaan[i].tombolPilihan.gameObject.SetActive(true);
+    }
+
+    private void TampilkanHalamanKesimpulanP2()
+    {
+        if (bayanganKesimpulanP2 != null) bayanganKesimpulanP2.SetActive(true);
+        for (int i = 0; i < halamanKesimpulanP2.Length; i++)
+            if (halamanKesimpulanP2[i] != null)
+                halamanKesimpulanP2[i].SetActive(i == halamanAktifKesimpulanP2);
+    }
+
+    private void TutupAlurKesimpulanP2()
+    {
+        halamanAktifKesimpulanP2 = -1;
+        if (bayanganKesimpulanP2 != null) bayanganKesimpulanP2.SetActive(false);
+        for (int i = 0; i < halamanKesimpulanP2.Length; i++)
+            if (halamanKesimpulanP2[i] != null)
+                halamanKesimpulanP2[i].SetActive(false);
+    }
+
+    private static Transform CariAnak(Transform induk, string nama)
+    {
+        if (induk == null) return null;
+        for (int i = 0; i < induk.childCount; i++)
+        {
+            Transform anak = induk.GetChild(i);
+            if (anak.name == nama) return anak;
+            Transform hasil = CariAnak(anak, nama);
+            if (hasil != null) return hasil;
+        }
+        return null;
+    }
+
+    private static Transform CariAnakLangsung(Transform induk, string nama)
+    {
+        if (induk == null) return null;
+        for (int i = 0; i < induk.childCount; i++)
+        {
+            Transform anak = induk.GetChild(i);
+            if (anak.name == nama) return anak;
+        }
+        return null;
+    }
+
     /// <summary>Kunci ulang semua percobaan (bisa dipanggil dari tombol reset).</summary>
     public void ResetProgres()
     {
         for (int i = 0; i < percobaan.Count; i++)
             percobaan[i].selesai = false;
+        TutupAlurKesimpulanP2();
         SembunyikanSemuaKesimpulan();
         TerapkanStatus();
         if (ManajerPilihItem.Instance != null)
