@@ -2,6 +2,10 @@
   <!-- Preserve essential Unity core and JNI modules for Flutter integration -->
   <assembly fullname="UnityEngine.CoreModule" preserve="all"/>
   <assembly fullname="UnityEngine.AndroidJNIModule" preserve="all"/>
+  <assembly fullname="UnityEngine" preserve="all"/>
+
+  <!-- Preserve Burst Compiler runtime -->
+  <assembly fullname="Unity.Burst" preserve="all"/>
   
   <!-- Preserve Vuforia AR Engine -->
   <assembly fullname="VuforiaEngine" preserve="all"/>

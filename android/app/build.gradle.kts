@@ -58,8 +58,8 @@ flutter {
 }
 
 dependencies {
-    val unityLibraryDir = file("../unityLibrary")
-    if (unityLibraryDir.exists()) {
+    val unityBuildGradle = file("../unityLibrary/build.gradle")
+    if (unityBuildGradle.exists()) {
         implementation(project(":unityLibrary"))
     }
 }

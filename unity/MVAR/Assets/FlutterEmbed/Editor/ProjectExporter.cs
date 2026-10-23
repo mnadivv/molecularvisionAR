@@ -8,9 +8,9 @@ using UnityEngine.Rendering;
 internal abstract class ProjectExporter {
     internal void Export(BuildPlayerOptions buildPlayerOptions, List<string> precheckWarnings)
     {        
-        // Strip engine code, but KEEP stripUnusedMeshComponents = false.
-        // Enabling Optimize Mesh Data causes Unity to evaluate 72 BILLION URP Lit variants ("Mesh data optimization - Resolving used channels") causing builds to hang for hours!
-        PlayerSettings.stripEngineCode = true;
+        // Disable engine code stripping to prevent Unity 6 missing internal call linker errors (BurstGetBindingsFunctionsForModule).
+        // KEEP stripUnusedMeshComponents = false to avoid the 72 billion URP variant mesh channel evaluation hang.
+        PlayerSettings.stripEngineCode = false;
         PlayerSettings.stripUnusedMeshComponents = false;
 
         if (buildPlayerOptions.target == BuildTarget.Android)
@@ -19,8 +19,8 @@ internal abstract class ProjectExporter {
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3 });
 
-            // Maximize code stripping and optimize IL2CPP for smaller binary size
-            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Android, ManagedStrippingLevel.High);
+            // Use Medium stripping level and optimize IL2CPP for size
+            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Android, ManagedStrippingLevel.Medium);
             PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.Android, Il2CppCodeGeneration.OptimizeSize);
             PlayerSettings.SetIl2CppCompilerConfiguration(BuildTargetGroup.Android, Il2CppCompilerConfiguration.Release);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;

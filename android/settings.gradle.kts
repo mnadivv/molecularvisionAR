@@ -25,8 +25,8 @@ plugins {
 
 include(":app")
 
-val unityLibraryDir = file("./unityLibrary")
-if (unityLibraryDir.exists()) {
+val unityBuildGradle = file("./unityLibrary/build.gradle")
+if (unityBuildGradle.exists()) {
     include(":unityLibrary")
-    project(":unityLibrary").projectDir = unityLibraryDir
+    project(":unityLibrary").projectDir = file("./unityLibrary")
 }
