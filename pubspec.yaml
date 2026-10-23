@@ -37,6 +37,7 @@ dependencies:
   google_fonts: ^6.2.1
 
   camera: ^0.11.1
+  permission_handler: ^11.4.0
   flutter_embed_unity: ^2.0.0
   flutter_bloc: ^9.1.1
   dio: ^5.11.1

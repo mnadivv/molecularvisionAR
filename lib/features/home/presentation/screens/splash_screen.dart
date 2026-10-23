@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_loading_bar.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../onboarding/presentation/screens/onboarding_screen.dart';
+import '../../../onboarding/services/onboarding_service.dart';
 import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -24,6 +27,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
+    // Meminta izin kamera awal saat pertama kali membuka aplikasi setelah download
+    PermissionService.requestInitialCameraPermission();
+
     Timer.periodic(const Duration(milliseconds: 45), (timer) {
       if (!mounted) return;
 
@@ -34,13 +40,22 @@ class _SplashScreenState extends State<SplashScreen> {
       if (progress >= 1) {
         timer.cancel();
 
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 500), () async {
           if (!mounted) return;
 
-          final authState = context.read<AuthBloc>().state;
-          final Widget nextScreen = authState is Authenticated
-              ? const HomeScreen()
-              : const LoginScreen();
+          final isOnboardingDone =
+              await OnboardingService.isOnboardingCompleted();
+          if (!mounted) return;
+
+          Widget nextScreen;
+          if (!isOnboardingDone) {
+            nextScreen = const OnboardingScreen();
+          } else {
+            final authState = context.read<AuthBloc>().state;
+            nextScreen = authState is Authenticated
+                ? const HomeScreen()
+                : const LoginScreen();
+          }
 
           Navigator.pushReplacement(
             context,

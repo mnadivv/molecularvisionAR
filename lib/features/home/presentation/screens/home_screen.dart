@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/camera_permission_dialog.dart';
 import '../../../ar/presentation/screens/ar_menu_screen.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -108,6 +110,28 @@ class _HomeViewState extends State<_HomeView> with TickerProviderStateMixin {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _navigateToARMenu() async {
+    final hasPermission = await PermissionService.hasCameraPermission();
+    if (!mounted) return;
+
+    if (hasPermission) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ARMenuScreen()),
+      );
+    } else {
+      await CameraPermissionDialog.show(
+        context,
+        onGranted: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ARMenuScreen()),
+          );
+        },
+      );
+    }
   }
 
   void _confirmLogout() {
@@ -664,14 +688,7 @@ class _HomeViewState extends State<_HomeView> with TickerProviderStateMixin {
                           subtitle:
                               "Visualisasikan molekul dalam bentuk 3D menggunakan kamera.",
                           iconColor: Colors.cyan,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ARMenuScreen(),
-                              ),
-                            );
-                          },
+                          onTap: _navigateToARMenu,
                         ),
 
                         const SizedBox(height: 25),
